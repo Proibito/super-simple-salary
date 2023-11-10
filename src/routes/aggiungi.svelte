@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { initializeDB, type DB } from '../inizializzaDb';
+  import { type DB, initializeDB } from '../inizializzaDb';
   import { getContext } from 'svelte';
-  import { count } from './store';
+  import { daysOBS } from './store';
   import { format } from 'date-fns';
 
-  const { toggleAggiungi } = getContext<{ toggleAggiungi: any }>('vision');
+  const { toggleAggiungi } = getContext<{ toggleAggiungi: () => void }>('vision');
 
   export let db: DB;
   let giorno = format(new Date(), 'yyyy-MM-dd');
@@ -18,7 +18,7 @@
   }
 
   // Funzione per rimuovere una fascia oraria
-  function rimuoviFasciaOraria(index: any) {
+  function rimuoviFasciaOraria(index: unknown) {
     fasceOrarie = fasceOrarie.filter((_, i) => i !== index);
   }
 
@@ -40,7 +40,7 @@
       giorno
     );
     console.log('Giorno lavorativo salvato!');
-    count.update((giorno) => {
+    daysOBS.update((giorno) => {
       return [
         ...giorno,
         {
@@ -53,12 +53,15 @@
   }
 </script>
 
-<div class="z-50 fixed bg-white w-full h-full overflow-y-auto">
-  <button on:click={toggleAggiungi}>chiudi</button>
+<div class="z-50 fixed bg-white w-full h-full overflow-y-auto flex items-center">
   <form
     on:submit|preventDefault={salvaGiornoLavorato}
     class="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg"
   >
+    <button
+      class="font-bold py-2 px-3 text-sm rounded-md shadow-md border mb-5"
+      on:click={toggleAggiungi}>chiudi</button
+    >
     <div class="mb-4">
       <label for="giorno" class="block text-gray-700 text-sm font-bold mb-2">Giorno:</label>
       <input
@@ -80,7 +83,7 @@
             bind:value={fascia.inizio}
             id={`inizio-${index}`}
             step="900"
-            class="shadow border rounded py-2 px-7 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow w-full block border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             required
           />
         </div>
@@ -92,7 +95,7 @@
             type="time"
             bind:value={fascia.fine}
             id={`fine-${index}`}
-            class="shadow border rounded py-2 px-7 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="shadow w-full block border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             step="900"
             required
           />

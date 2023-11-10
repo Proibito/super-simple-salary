@@ -4,8 +4,8 @@ import type { WORKEDDAY } from "../inizializzaDb";
 export function calcolaOre(fasce: WORKEDDAY["fasce_orarie"]): number {
     let tot = 0;
     fasce.forEach(fascia => {
-        let [oraInizio, minutiInizio] = fascia.inizio.split(':').map(Number);
-        let [oraFine, minutiFine] = fascia.fine.split(':').map(Number);
+        const [oraInizio, minutiInizio] = fascia.inizio.split(':').map(Number);
+        const [oraFine, minutiFine] = fascia.fine.split(':').map(Number);
 
         let dataInizio = new Date();
         dataInizio = setHours(dataInizio, oraInizio);
@@ -19,7 +19,7 @@ export function calcolaOre(fasce: WORKEDDAY["fasce_orarie"]): number {
             dataFine.setDate(dataFine.getDate() + 1);
         }
 
-        let differenzaMinuti = differenceInMinutes(dataFine, dataInizio);
+        const differenzaMinuti = differenceInMinutes(dataFine, dataInizio);
         tot += differenzaMinuti / 60;
     })
     return tot;

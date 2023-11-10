@@ -1,7 +1,7 @@
 // database.ts
 import { format } from 'date-fns';
-import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import { count } from './routes/store';
+import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
+import { daysOBS } from './routes/store';
 
 
 export interface WORKEDDAY {
@@ -69,7 +69,7 @@ export async function eliminaRecord(day: WORKEDDAY): Promise<any> {
     if (record) {
       await db.delete('giorni_lavorati', key);
 
-      count.update((old) => {
+      daysOBS.update((old) => {
         // remove record with the same date;
         return old.filter((item) => item.giorno !== day.giorno)
       })
@@ -92,7 +92,7 @@ export async function updateRecord(day: WORKEDDAY): Promise<any> {
 
   await db.put('giorni_lavorati', day, format(day.giorno, "yyyy-MM-dd"));
 
-  count.update((old) => {
+  daysOBS.update((old) => {
     // remove record with the same date;
     return old.map((item) => {
       if (item.giorno === day.giorno) {
@@ -100,4 +100,25 @@ export async function updateRecord(day: WORKEDDAY): Promise<any> {
       } else return item
     })
   })
+}
+
+
+export async function ottieniDateASC(): Promise<WORKEDDAY[]> {
+  if (!db) return []
+
+  const transaction = db.transaction('giorni_lavorati', 'readonly');
+  const store = transaction.objectStore('giorni_lavorati');
+  const index = store.index('giorno');
+
+  const giorniLavorati = [];
+  let cursor = await index.openCursor(null, 'prev');
+
+  while (cursor) {
+    giorniLavorati.push(cursor.value);
+    cursor = await cursor.continue();
+  }
+
+  await transaction.done;
+
+  return giorniLavorati;
 }

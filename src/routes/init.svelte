@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { initializeDB, type DB } from '../inizializzaDb';
-
-  let db: DB;
+  import { type DB, initializeDB } from '../inizializzaDb';
 
   let pagaOraria: number = 0;
 
