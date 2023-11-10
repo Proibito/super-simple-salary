@@ -10,7 +10,7 @@
   import { initializeDB, type DB, type MyDB } from '../inizializzaDb';
   import { count } from './store';
   import { setDefaultOptions } from 'date-fns';
-  import { it } from 'date-fns/locale';
+  import it from 'date-fns/locale/it/index.js';
 
   setDefaultOptions({ locale: it });
 
