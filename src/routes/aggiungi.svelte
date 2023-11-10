@@ -1,15 +1,15 @@
 <script lang="ts">
   import { initializeDB, type DB } from '../inizializzaDb';
   import { getContext } from 'svelte';
-  import moment from 'moment';
   import { count } from './store';
+  import { format } from 'date-fns';
 
   const { toggleAggiungi } = getContext<{ toggleAggiungi: any }>('vision');
 
-  const aggiorna = getContext('update');
-
   export let db: DB;
-  let giorno = moment().format('YYYY-MM-DD');
+  let giorno = format(new Date(), 'yyyy-MM-dd');
+  console.log(giorno);
+
   let fasceOrarie = [{ inizio: '', fine: '' }];
 
   // Funzione per aggiungere una nuova fascia oraria
@@ -28,7 +28,8 @@
       db = await initializeDB();
     }
 
-    const parseGiorno = moment(giorno).toDate();
+    const parseGiorno = new Date(giorno); // todo da cambiare
+    console.log(parseGiorno);
 
     await db.put(
       'giorni_lavorati',
@@ -78,6 +79,7 @@
             type="time"
             bind:value={fascia.inizio}
             id={`inizio-${index}`}
+            step="900"
             class="shadow border rounded py-2 px-7 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             required
           />
@@ -91,6 +93,7 @@
             bind:value={fascia.fine}
             id={`fine-${index}`}
             class="shadow border rounded py-2 px-7 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            step="900"
             required
           />
         </div>
@@ -123,7 +126,3 @@
     </div>
   </form>
 </div>
-
-<style>
-  /* Aggiungi qui eventuali stili specifici */
-</style>

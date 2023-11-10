@@ -1,5 +1,7 @@
 // database.ts
+import { format } from 'date-fns';
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { count } from './routes/store';
 
 
 export interface WORKEDDAY {
@@ -50,3 +52,52 @@ export async function initializeDB(): Promise<IDBPDatabase<MyDB>> {
   });
   return db;
 };
+
+export async function eliminaRecord(day: WORKEDDAY): Promise<any> {
+  if (!db) {
+    return { esito: 1, errore: "database non caricato" };
+  }
+
+  // Formatta la chiave nel formato YYYY-MM-DD
+  const key = format(day.giorno, "yyyy-MM-dd");
+
+  try {
+    // Cerca la chiave nello store 'giorni_lavorati'
+    const record = await db.get('giorni_lavorati', key);
+
+    // Se il record esiste, elimina il record
+    if (record) {
+      await db.delete('giorni_lavorati', key);
+
+      count.update((old) => {
+        // remove record with the same date;
+        return old.filter((item) => item.giorno !== day.giorno)
+      })
+
+      return { esito: 0, messaggio: "Record eliminato con successo" };
+    } else {
+      return { esito: 1, errore: "Record non trovato" };
+    }
+  } catch (errore) {
+    console.error('Errore nell\'eliminazione del record:', errore);
+    return { esito: 1, errore: "Errore nell'eliminazione del record" };
+  }
+}
+
+
+export async function updateRecord(day: WORKEDDAY): Promise<any> {
+  if (!db) {
+    return { esito: 1, errore: "database non caricato" };
+  }
+
+  await db.put('giorni_lavorati', day, format(day.giorno, "yyyy-MM-dd"));
+
+  count.update((old) => {
+    // remove record with the same date;
+    return old.map((item) => {
+      if (item.giorno === day.giorno) {
+        return day;
+      } else return item
+    })
+  })
+}
