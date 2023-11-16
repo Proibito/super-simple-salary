@@ -2,17 +2,18 @@
   import { onDestroy, onMount } from 'svelte';
   import { daysOBS } from './store';
   import SummaryDays from './summaryDays.svelte';
-  import { initializeDB } from '../inizializzaDb';
-  import { calcolaOre } from './helper';
+  import { initializeDB, type WORKEDDAY } from '../inizializzaDb';
+  import { calcolaOre, getDayWorkedMonth, getHoursOfMonth } from './helper';
+  import { format, getMonth } from 'date-fns';
 
   let salaryH = 0;
   let pagaOraria = 0;
-  let aggiuntivo = 0;
+  let currMonth = getMonth(new Date());
   let oreViaggio = 0;
+  let giorni: WORKEDDAY[] = [];
   const OBS = daysOBS.subscribe((value) => {
     salaryH = 0;
-    aggiuntivo = value.length;
-
+    giorni = value;
     value.forEach((giorno) => {
       salaryH += calcolaOre(giorno.fasce_orarie);
     });
@@ -31,8 +32,9 @@
 
 <div>
   <p class="text-xl my-5">
-    Il tuo stipendio fino ad ora: <br />€ {salaryH * pagaOraria +
-      aggiuntivo * oreViaggio * pagaOraria} 🤑
+    Il tuo stipendio di {format(new Date(), 'MMMM')} fino ad ora: <br />€
+    {getHoursOfMonth(giorni, currMonth) * pagaOraria +
+      getDayWorkedMonth(giorni, currMonth) * oreViaggio * pagaOraria} 🤑
   </p>
   <hr />
 

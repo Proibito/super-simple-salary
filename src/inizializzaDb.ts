@@ -6,11 +6,13 @@ import { daysOBS } from './routes/store';
 
 export interface WORKEDDAY {
   giorno: Date;
-  fasce_orarie: {
-    inizio: string;
-    fine: string;
-  }[];
+  fasce_orarie: fascia_oraria[];
 };
+
+export interface fascia_oraria{
+  inizio: string;
+  fine: string;
+}
 
 export interface MyDB extends DBSchema {
   giorni_lavorati: {
