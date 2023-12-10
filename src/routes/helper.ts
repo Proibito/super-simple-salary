@@ -48,4 +48,23 @@ export function getDayWorkedMonth(days: WORKEDDAY[], month: number): number {
   return tot;
 }
 
-export function ottieniMesiLavorati(fasce: WORKEDDAY['fasce_orarie']) {}
+export function getDayWithTravel(days: WORKEDDAY[], month: number): number {
+  let tot: number = 0;
+  days.forEach((day) => {
+    if (getMonth(day.giorno) == month && day.viaggio) {
+      tot += 1;
+    }
+  });
+  return tot;
+}
+
+
+export function calcolaGuadagnoMensile(days: WORKEDDAY[], month: number): number {
+  const oreLavorate = getHoursOfMonth(days, month);
+  const pagaTotale = oreLavorate * 10;
+
+  const giorniDiViaggio = getDayWithTravel(days, month);
+  const extraViaggio = giorniDiViaggio * 10;
+
+  return pagaTotale + extraViaggio;
+}

@@ -7,9 +7,10 @@ import { daysOBS } from './routes/store';
 export interface WORKEDDAY {
   giorno: Date;
   fasce_orarie: fascia_oraria[];
+  viaggio: boolean;
 };
 
-export interface fascia_oraria{
+export interface fascia_oraria {
   inizio: string;
   fine: string;
 }
@@ -34,7 +35,7 @@ let db: IDBPDatabase<MyDB>;
 export type DB = IDBPDatabase<MyDB>;
 
 export async function initializeDB(): Promise<IDBPDatabase<MyDB>> {
-  db = await openDB<MyDB>('MyDB', 1, {
+  db = await openDB<MyDB>('MyDB', 2, {
     upgrade(db, old, newVersion, transition) {
       // Create "giorni_lavorati" store with "giorno" index
       if (!db.objectStoreNames.contains('giorni_lavorati')) {
@@ -49,6 +50,21 @@ export async function initializeDB(): Promise<IDBPDatabase<MyDB>> {
       if (!db.objectStoreNames.contains('viaggio')) {
         db.createObjectStore('viaggio');
         transition.objectStore("viaggio").put(2, "main")
+      }
+
+      // Aggiunta per aggiornare i record esistenti
+      if (old < 2) { // Verifica se stai facendo l'upgrade dalla versione 1 alla 2
+        const giorniLavoratiStore = transition.objectStore('giorni_lavorati');
+
+        giorniLavoratiStore.openCursor().then(cursor => {
+          if (!cursor) return;
+          do {
+            const record = cursor.value;
+            // Aggiungi la nuova proprietà viaggio con valore true
+            record.viaggio = true;
+            cursor.update(record);
+          } while (cursor.continue());
+        });
       }
     },
   });

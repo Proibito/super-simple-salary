@@ -11,12 +11,15 @@
   import { daysOBS } from './store';
   import { setDefaultOptions } from 'date-fns';
   import it from 'date-fns/locale/it/index.js';
+  import Portal from './Portal.svelte';
 
   setDefaultOptions({ locale: it });
   setContext('vision', { toggleAggiungi });
   setContext('db', {
     db: (): DB => db
   });
+
+  const links = ['home', 'storico', 'statistiche'];
 
   function toggleAggiungi() {
     visibleAdd = !visibleAdd;
@@ -26,6 +29,7 @@
   $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
   let esiste: boolean = true;
   let db: IDBPDatabase<MyDB>;
+  let showPortal: boolean = false;
 
   onMount(async () => {
     db = await initializeDB();
@@ -52,7 +56,9 @@
 
   <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
     <svelte:fragment slot="lead">
-      <IconAccessibility />
+      <button on:click={() => (showPortal = !showPortal)}>
+        <IconAccessibility />
+      </button>
     </svelte:fragment>
     Stipendio
     <svelte:fragment slot="trail">
@@ -71,6 +77,18 @@
   <ReloadPrompt />
 {/await}
 
-<span class="fixed bottom-0 w-full text-center text-xs bg-white z-[999]">
-  Fatto con il ❤️ da <span class="font-bold">Edoardo Balzano</span>
-</span>
+{#if showPortal}
+  <Portal>
+    <div class="bg-white w-[90%] min-h-[50%] rounded">
+      <button on:click={() => (showPortal = false)}>Chiudi</button>
+
+      <div class="flex flex-col">
+        {#each links as link}
+          <a href={`./${link == "home" ? "" : link }`} class="font-bold underline" on:click={() => (showPortal = false)}
+            >{link}</a
+          >
+        {/each}
+      </div>
+    </div>
+  </Portal>
+{/if}

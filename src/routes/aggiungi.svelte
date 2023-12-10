@@ -8,7 +8,7 @@
 
   export let db: DB;
   let giorno = format(new Date(), 'yyyy-MM-dd');
-  console.log(giorno);
+  let viaggio = false;
 
   let fasceOrarie = [{ inizio: '', fine: '' }];
 
@@ -35,7 +35,8 @@
       'giorni_lavorati',
       {
         giorno: parseGiorno,
-        fasce_orarie: fasceOrarie
+        fasce_orarie: fasceOrarie,
+        viaggio
       },
       giorno
     );
@@ -45,7 +46,8 @@
         ...giorno,
         {
           giorno: parseGiorno,
-          fasce_orarie: fasceOrarie
+          fasce_orarie: fasceOrarie,
+          viaggio
         }
       ];
     });
@@ -71,6 +73,17 @@
         class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
       />
     </div>
+
+    <!-- add radio viaggio -->
+    <div class="mb-4">
+      <label for="viaggio" class="block text-gray-700 text-sm font-bold mb-2">Viaggio:</label>
+      <input
+        type="checkbox"
+        bind:checked={viaggio}
+        id="viaggio"
+        class="shadow border rounded py-2 px-5 w-5 h-5 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      />
+
 
     {#each fasceOrarie as fascia, index}
       <div class="grid grid-cols-3 gap-2 mb-4">

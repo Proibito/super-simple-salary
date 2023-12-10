@@ -78,10 +78,9 @@
           >
         </div>
 
-        <!-- Sezione Destra: Guadagno ed Azioni -->
         <div class="text-right flex items-center">
           <span class="text-lg font-bold text-green-500 mr-4"
-            >€ {calcolaOre(giorno.fasce_orarie) * 10 + 2 * 10}</span
+            >€ {calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0)}</span
           >
         </div>
       </div>
