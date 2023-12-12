@@ -1,17 +1,28 @@
 <script lang="ts">
+  import '../app.css';
   import { pwaInfo } from 'virtual:pwa-info';
   import { onMount, setContext } from 'svelte';
   import Init from './init.svelte';
   import type { IDBPDatabase } from 'idb';
-  import '../app.css';
   import { AppBar } from '@skeletonlabs/skeleton';
   import IconAccessibility from '~icons/solar/hamburger-menu-outline';
-  import Aggiungi from './aggiungi.svelte';
   import { type DB, type MyDB, initializeDB, ottieniDateASC } from '../inizializzaDb';
-  import { daysOBS } from './store';
+  import { daysOBS } from '../lib/store';
   import { setDefaultOptions } from 'date-fns';
   import it from 'date-fns/locale/it/index.js';
   import Portal from './Portal.svelte';
+  import Aggiungi from './Aggiungi.svelte';
+
+  let visibleAdd = false;
+  $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
+  let esiste: boolean = true;
+  let db: IDBPDatabase<MyDB>;
+  let showPortal: boolean = false;
+  const links = ['home', 'storico', 'statistiche'];
+
+  function toggleAggiungi() {
+    visibleAdd = !visibleAdd;
+  }
 
   setDefaultOptions({ locale: it });
   setContext('vision', { toggleAggiungi });
@@ -19,27 +30,15 @@
     db: (): DB => db
   });
 
-  const links = ['home', 'storico', 'statistiche'];
-
-  function toggleAggiungi() {
-    visibleAdd = !visibleAdd;
-  }
-
-  let visibleAdd = false;
-  $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
-  let esiste: boolean = true;
-  let db: IDBPDatabase<MyDB>;
-  let showPortal: boolean = false;
-
   onMount(async () => {
     db = await initializeDB();
     esiste = (await db.get('paga_base', 'main')) != undefined;
     const giorniLavorati = await ottieniDateASC();
-
-    daysOBS.update((giorniEsistenti) => {
-      // Assumi che `giorniLavorati` sia un array di giorni lavorati che vuoi aggiungere
-      return [...giorniEsistenti, ...giorniLavorati];
-    });
+    if (giorniLavorati.length > 0)
+      daysOBS.update((giorniEsistenti) => {
+        // Assumi che `giorniLavorati` sia un array di giorni lavorati che vuoi aggiungere
+        return [...giorniEsistenti, ...giorniLavorati];
+      });
   });
 </script>
 
@@ -77,6 +76,7 @@
   <ReloadPrompt />
 {/await}
 
+<!-- Portal stuff for menu -->
 {#if showPortal}
   <Portal>
     <div class="bg-white w-[90%] min-h-[50%] rounded">
@@ -84,8 +84,10 @@
 
       <div class="flex flex-col">
         {#each links as link}
-          <a href={`./${link == "home" ? "" : link }`} class="font-bold underline" on:click={() => (showPortal = false)}
-            >{link}</a
+          <a
+            href={`./${link == 'home' ? '' : link}`}
+            class="font-bold underline"
+            on:click={() => (showPortal = false)}>{link}</a
           >
         {/each}
       </div>

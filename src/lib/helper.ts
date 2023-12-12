@@ -60,6 +60,7 @@ export function getDayWithTravel(days: WORKEDDAY[], month: number): number {
 
 
 export function calcolaGuadagnoMensile(days: WORKEDDAY[], month: number): number {
+ 
   const oreLavorate = getHoursOfMonth(days, month);
   const pagaTotale = oreLavorate * 10;
 
@@ -67,4 +68,8 @@ export function calcolaGuadagnoMensile(days: WORKEDDAY[], month: number): number
   const extraViaggio = giorniDiViaggio * 10;
 
   return pagaTotale + extraViaggio;
+}
+
+export function calculateEarningDat(giorno: WORKEDDAY): number {
+  return calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0)
 }

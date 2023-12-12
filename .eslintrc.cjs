@@ -19,7 +19,10 @@ module.exports = {
     es2017: true,
     node: true
   },
-  rules: {},
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'off',
+    "svelte/no-at-html-tags" : "off"
+  },
   overrides: [
     {
       files: ['*.svelte'],

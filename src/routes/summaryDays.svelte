@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { daysOBS } from './store';
+  import { daysOBS } from '../lib/store';
   import { format } from 'date-fns';
-  import { calcolaOre } from './helper';
+  import { calcolaOre, calculateEarningDat } from '../lib/helper';
   import { type WORKEDDAY, eliminaRecord, updateRecord } from '../inizializzaDb';
 
   let giorniLavorati: WORKEDDAY[] = [];
@@ -13,7 +13,7 @@
 
   onDestroy(obs);
 
-  let editandoIndex = -1; // Indice della fascia oraria che sta venendo modificata
+  let editandoIndex = -1;
   let editDate = -1;
   let giornoPerFasce = -1;
 
@@ -46,14 +46,16 @@
         <!-- Sezione Sinistra: Data e Ore lavorate -->
         <div>
           {#if idx !== editDate}
-            <span class="block text-sm font-medium text-gray-700" on:click={() => modificaData(idx)}
+            <span
+              class="block text-sm font-medium text-gray-700"
+              on:click={() => modificaData(idx)}
               role="button"
               tabindex="0"
               aria-pressed="true"
               on:click={() => modificaData(idx)}
-              on:keypress={() => {console.log("sium");
-              }}
-              >{format(giorno.giorno, 'iiii d/M/y')}</span
+              on:keypress={() => {
+                console.log('sium');
+              }}>{format(giorno.giorno, 'iiii d/M/y')}</span
             >
           {:else}
             <div class="mb-4">
@@ -76,12 +78,22 @@
           <span class="block text-sm font-light text-gray-500"
             >ore lavorate: {calcolaOre(giorno.fasce_orarie)}</span
           >
+          <span
+            class="block text-sm font-light text-gray-500"
+            on:click={() => {
+              giorno.viaggio = !giorno.viaggio;
+              salvaModifiche(giorno);
+            }}
+            on:keypress={() => (giorno.viaggio = !giorno.viaggio)}
+            role="button"
+            tabindex="0"
+            aria-pressed={giorno.viaggio ? 'true' : 'false'}
+            >viaggio: {giorno.viaggio ? 'si' : 'no'}</span
+          >
         </div>
 
         <div class="text-right flex items-center">
-          <span class="text-lg font-bold text-green-500 mr-4"
-            >€ {calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0)}</span
-          >
+          <span class="text-lg font-bold text-green-500 mr-4">€ {calculateEarningDat(giorno)}</span>
         </div>
       </div>
       {#each giorno.fasce_orarie as fascia, index}

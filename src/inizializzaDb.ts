@@ -1,7 +1,7 @@
 // database.ts
 import { format } from 'date-fns';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
-import { daysOBS } from './routes/store';
+import { daysOBS } from '$lib/store';
 
 
 export interface WORKEDDAY {
@@ -71,7 +71,7 @@ export async function initializeDB(): Promise<IDBPDatabase<MyDB>> {
   return db;
 };
 
-export async function eliminaRecord(day: WORKEDDAY): Promise<any> {
+export async function eliminaRecord(day: WORKEDDAY): Promise<object> {
   if (!db) {
     return { esito: 1, errore: "database non caricato" };
   }
@@ -103,7 +103,7 @@ export async function eliminaRecord(day: WORKEDDAY): Promise<any> {
 }
 
 
-export async function updateRecord(day: WORKEDDAY): Promise<any> {
+export async function updateRecord(day: WORKEDDAY): Promise<object> {
   if (!db) {
     return { esito: 1, errore: "database non caricato" };
   }
@@ -118,6 +118,7 @@ export async function updateRecord(day: WORKEDDAY): Promise<any> {
       } else return item
     })
   })
+  return {};
 }
 
 

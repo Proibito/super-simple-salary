@@ -1,29 +1,35 @@
 <script lang="ts">
-    import { onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import type { WORKEDDAY } from '../../inizializzaDb';
-  import { calcolaGuadagnoMensile, calcolaOre } from '../helper';
-  import { daysOBS } from '../store';
-
-  let giorni: WORKEDDAY[] = [];
-  const OBS = daysOBS.subscribe((value) => {
-    giorni = value;
-  });
-
-  onDestroy(() => {
-    OBS();
-  });
+  import { calcolaGuadagnoMensile } from '../../lib/helper';
+  import { daysOBS } from '../../lib/store';
 
   let guadagniMensili: { mese: number; guadagno: number }[] = [];
 
-  // Calcola il guadagno per ogni mese
-  for (let mese = 0; mese < 12; mese++) {
-    guadagniMensili.push({
-      mese: mese + 1,
-      guadagno: calcolaGuadagnoMensile(giorni, mese)
-    });
-  }
-</script>
+  let giorni: WORKEDDAY[] = [];
 
+  // Reactive statement to update giorni whenever daysOBS changes
+  $: if ($daysOBS) {
+    giorni = $daysOBS;
+    calcolaGuadagniMensili();
+  }
+
+  function calcolaGuadagniMensili() {
+    guadagniMensili = [];
+    for (let mese = 0; mese < 12; mese++) {
+      guadagniMensili.push({
+        mese: mese,
+        guadagno: calcolaGuadagnoMensile(giorni, mese)
+      });
+    }
+  }
+
+  // Initial calculation on mount
+  onMount(() => {
+    calcolaGuadagniMensili();
+  });
+
+</script>
 <ul>
   {#each guadagniMensili as guadagnoMensile}
     <li>Mese: {guadagnoMensile.mese}, Guadagno: € {guadagnoMensile.guadagno}</li>

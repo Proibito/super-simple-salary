@@ -1,22 +1,17 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import { daysOBS } from './store';
+  import { daysOBS } from '../lib/store';
   import SummaryDays from './summaryDays.svelte';
   import { initializeDB, type WORKEDDAY } from '../inizializzaDb';
-  import { calcolaOre, getDayWithTravel, getDayWorkedMonth, getHoursOfMonth } from './helper';
+  import { getDayWithTravel, getHoursOfMonth } from '../lib/helper';
   import { format, getMonth } from 'date-fns';
 
-  let salaryH = 0;
   let pagaOraria = 0;
   let currMonth = getMonth(new Date());
   let oreViaggio = 0;
   let giorni: WORKEDDAY[] = [];
   const OBS = daysOBS.subscribe((value) => {
-    salaryH = 0;
     giorni = value;
-    value.forEach((giorno) => {
-      salaryH += calcolaOre(giorno.fasce_orarie);
-    });
   });
 
   onMount(async () => {
