@@ -11,7 +11,7 @@
   import { setDefaultOptions } from 'date-fns';
   import it from 'date-fns/locale/it/index.js';
   import Portal from './Portal.svelte';
-  import Aggiungi from './Aggiungi.svelte';
+  import Aggiungi from './aggiungi.svelte';
 
   let visibleAdd = false;
   $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
