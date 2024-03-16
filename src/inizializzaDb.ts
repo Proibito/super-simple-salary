@@ -3,12 +3,12 @@ import { format } from 'date-fns';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { daysOBS } from '$lib/store';
 
-
 export interface WORKEDDAY {
   giorno: Date;
   fasce_orarie: fascia_oraria[];
   viaggio: boolean;
-};
+  yourCar: boolean;
+}
 
 export interface fascia_oraria {
   inizio: string;
@@ -17,9 +17,9 @@ export interface fascia_oraria {
 
 export interface MyDB extends DBSchema {
   giorni_lavorati: {
-    value: WORKEDDAY
+    value: WORKEDDAY;
     key: string;
-    indexes: { 'giorno': Date };
+    indexes: { giorno: Date };
   };
   paga_base: {
     key: string;
@@ -45,18 +45,19 @@ export async function initializeDB(): Promise<IDBPDatabase<MyDB>> {
       // Create other stores
       if (!db.objectStoreNames.contains('paga_base')) {
         db.createObjectStore('paga_base');
-        transition.objectStore("paga_base").put(10, "main")
+        transition.objectStore('paga_base').put(10, 'main');
       }
       if (!db.objectStoreNames.contains('viaggio')) {
         db.createObjectStore('viaggio');
-        transition.objectStore("viaggio").put(2, "main")
+        transition.objectStore('viaggio').put(2, 'main');
       }
 
       // Aggiunta per aggiornare i record esistenti
-      if (old < 2) { // Verifica se stai facendo l'upgrade dalla versione 1 alla 2
+      if (old < 2) {
+        // Verifica se stai facendo l'upgrade dalla versione 1 alla 2
         const giorniLavoratiStore = transition.objectStore('giorni_lavorati');
 
-        giorniLavoratiStore.openCursor().then(cursor => {
+        giorniLavoratiStore.openCursor().then((cursor) => {
           if (!cursor) return;
           do {
             const record = cursor.value;
@@ -66,18 +67,18 @@ export async function initializeDB(): Promise<IDBPDatabase<MyDB>> {
           } while (cursor.continue());
         });
       }
-    },
+    }
   });
   return db;
-};
+}
 
 export async function eliminaRecord(day: WORKEDDAY): Promise<object> {
   if (!db) {
-    return { esito: 1, errore: "database non caricato" };
+    return { esito: 1, errore: 'database non caricato' };
   }
 
   // Formatta la chiave nel formato YYYY-MM-DD
-  const key = format(day.giorno, "yyyy-MM-dd");
+  const key = format(day.giorno, 'yyyy-MM-dd');
 
   try {
     // Cerca la chiave nello store 'giorni_lavorati'
@@ -89,41 +90,39 @@ export async function eliminaRecord(day: WORKEDDAY): Promise<object> {
 
       daysOBS.update((old) => {
         // remove record with the same date;
-        return old.filter((item) => item.giorno !== day.giorno)
-      })
+        return old.filter((item) => item.giorno !== day.giorno);
+      });
 
-      return { esito: 0, messaggio: "Record eliminato con successo" };
+      return { esito: 0, messaggio: 'Record eliminato con successo' };
     } else {
-      return { esito: 1, errore: "Record non trovato" };
+      return { esito: 1, errore: 'Record non trovato' };
     }
   } catch (errore) {
-    console.error('Errore nell\'eliminazione del record:', errore);
+    console.error("Errore nell'eliminazione del record:", errore);
     return { esito: 1, errore: "Errore nell'eliminazione del record" };
   }
 }
 
-
 export async function updateRecord(day: WORKEDDAY): Promise<object> {
   if (!db) {
-    return { esito: 1, errore: "database non caricato" };
+    return { esito: 1, errore: 'database non caricato' };
   }
 
-  await db.put('giorni_lavorati', day, format(day.giorno, "yyyy-MM-dd"));
+  await db.put('giorni_lavorati', day, format(day.giorno, 'yyyy-MM-dd'));
 
   daysOBS.update((old) => {
     // remove record with the same date;
     return old.map((item) => {
       if (item.giorno === day.giorno) {
         return day;
-      } else return item
-    })
-  })
+      } else return item;
+    });
+  });
   return {};
 }
 
-
 export async function ottieniDateASC(): Promise<WORKEDDAY[]> {
-  if (!db) return []
+  if (!db) return [];
 
   const transaction = db.transaction('giorni_lavorati', 'readonly');
   const store = transaction.objectStore('giorni_lavorati');

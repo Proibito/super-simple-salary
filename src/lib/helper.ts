@@ -58,9 +58,7 @@ export function getDayWithTravel(days: WORKEDDAY[], month: number): number {
   return tot;
 }
 
-
 export function calcolaGuadagnoMensile(days: WORKEDDAY[], month: number): number {
- 
   const oreLavorate = getHoursOfMonth(days, month);
   const pagaTotale = oreLavorate * 10;
 
@@ -70,6 +68,16 @@ export function calcolaGuadagnoMensile(days: WORKEDDAY[], month: number): number
   return pagaTotale + extraViaggio;
 }
 
+export function calcolaYourCar(days: WORKEDDAY[], month: number): number {
+  let tot: number = 0;
+  days.forEach((day) => {
+    if (getMonth(day.giorno) == month && day.yourCar) {
+      tot += 1;
+    }
+  });
+  return tot;
+}
+
 export function calculateEarningDat(giorno: WORKEDDAY): number {
-  return calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0)
+  return calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0);
 }

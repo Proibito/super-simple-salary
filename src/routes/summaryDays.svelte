@@ -90,6 +90,19 @@
             aria-pressed={giorno.viaggio ? 'true' : 'false'}
             >viaggio: {giorno.viaggio ? 'si' : 'no'}</span
           >
+
+          <span
+            class="block text-sm font-light text-gray-500"
+            on:click={() => {
+              giorno.yourCar = !giorno.yourCar;
+              salvaModifiche(giorno);
+            }}
+            on:keypress={() => (giorno.yourCar = !giorno.yourCar)}
+            role="button"
+            tabindex="0"
+            aria-pressed={giorno.yourCar ? 'true' : 'false'}
+            >Con la tua macchina: {giorno.yourCar ? 'si' : 'no'}</span
+          >
         </div>
 
         <div class="text-right flex items-center">

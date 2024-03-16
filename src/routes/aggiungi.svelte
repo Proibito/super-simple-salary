@@ -8,6 +8,7 @@
   export let db: DB;
   let giorno = format(new Date(), 'yyyy-MM-dd');
   let viaggio = false;
+  let yourCar = false;
   let fasceOrarie = [{ inizio: '', fine: '' }];
 
   // Funzione per aggiungere una nuova fascia oraria
@@ -34,7 +35,8 @@
       {
         giorno: parseGiorno,
         fasce_orarie: fasceOrarie,
-        viaggio
+        viaggio,
+        yourCar
       },
       giorno
     );
@@ -45,7 +47,8 @@
         {
           giorno: parseGiorno,
           fasce_orarie: fasceOrarie,
-          viaggio
+          viaggio,
+          yourCar
         }
       ];
     });
@@ -79,6 +82,16 @@
         type="checkbox"
         bind:checked={viaggio}
         id="viaggio"
+        class="shadow border rounded py-2 px-5 w-5 h-5 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      />
+
+    <!-- add radio viaggio -->
+    <div class="mb-4">
+      <label for="yourCar" class="block text-gray-700 text-sm font-bold mb-2">Con la tua macchina:</label>
+      <input
+        type="checkbox"
+        bind:checked={yourCar}
+        id="yourcar"
         class="shadow border rounded py-2 px-5 w-5 h-5 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
       />
 
