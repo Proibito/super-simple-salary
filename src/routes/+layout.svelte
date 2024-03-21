@@ -2,21 +2,17 @@
   import '../app.css';
   import { pwaInfo } from 'virtual:pwa-info';
   import { onMount, setContext } from 'svelte';
-  import Init from './init.svelte';
-  import type { IDBPDatabase } from 'idb';
   import { AppBar } from '@skeletonlabs/skeleton';
   import IconAccessibility from '~icons/solar/hamburger-menu-outline';
-  import { type DB, type MyDB, initializeDB, ottieniDateASC } from '../inizializzaDb';
   import { daysOBS } from '../lib/store';
   import { setDefaultOptions } from 'date-fns';
-  import it from 'date-fns/locale/it/index.js';
+  import { it } from 'date-fns/locale';
   import Portal from './Portal.svelte';
-  import Aggiungi from './aggiungi.svelte';
+  import Aggiungi from './Aggiungi.svelte';
 
   let visibleAdd = false;
   $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
-  let esiste: boolean = true;
-  let db: IDBPDatabase<MyDB>;
+  let loaded: boolean = false;
   let showPortal: boolean = false;
   const links = ['home', 'storico', 'statistiche'];
 
@@ -26,17 +22,14 @@
 
   setDefaultOptions({ locale: it });
   setContext('vision', { toggleAggiungi });
-  setContext('db', {
-    db: (): DB => db
-  });
 
   onMount(async () => {
-    db = await initializeDB();
-    esiste = (await db.get('paga_base', 'main')) != undefined;
-    const giorniLavorati = await ottieniDateASC();
-    if (giorniLavorati.length > 0)
+    const DB = (await import('$lib/database')).DB;
+    DB.startDatabase().then(() => (loaded = true));
+
+    const giorniLavorati = await DB.getWorkedDays(true);
+    if (giorniLavorati && giorniLavorati.length > 0)
       daysOBS.update((giorniEsistenti) => {
-        // Assumi che `giorniLavorati` sia un array di giorni lavorati che vuoi aggiungere
         return [...giorniEsistenti, ...giorniLavorati];
       });
   });
@@ -46,11 +39,11 @@
   {@html webManifest}
 </svelte:head>
 
-{#if !esiste}
-  <Init bind:salvato={esiste} />
+{#if !loaded}
+  <h1>Caricamento in corso...</h1>
 {:else}
   {#if visibleAdd}
-    <Aggiungi {db} />
+    <Aggiungi />
   {/if}
 
   <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">

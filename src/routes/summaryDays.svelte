@@ -1,17 +1,14 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-  import { daysOBS } from '../lib/store';
-  import { format } from 'date-fns';
+  import { format, getMonth } from 'date-fns';
   import { calcolaOre, calculateEarningDat } from '../lib/helper';
-  import { type WORKEDDAY, eliminaRecord, updateRecord } from '../inizializzaDb';
+  import type { workedDay } from 'src/types';
+  import { DB } from '$lib/database';
 
-  let giorniLavorati: WORKEDDAY[] = [];
-
-  const obs = daysOBS.subscribe((value) => {
-    giorniLavorati = value;
+  let workedDays: workedDay[] = [];
+  DB._workedDays.subscribe((value) => {
+    workedDays = value;
+    workedDays.sort((a, b) => b.giorno.getTime() - a.giorno.getTime());
   });
-
-  onDestroy(obs);
 
   let editandoIndex = -1;
   let editDate = -1;
@@ -26,10 +23,15 @@
     editDate = index;
   }
 
-  async function salvaModifiche(giorno: WORKEDDAY) {
-    if (typeof giorno.giorno === 'string') giorno.giorno = new Date(giorno.giorno);
+  async function deleteWorkedDay(workedDay: workedDay) {
+    await DB.deleteWorkedDay(workedDay);
+    workedDays = (await DB.getWorkedDays()) ?? [];
+  }
 
-    await updateRecord(giorno);
+  async function salvaModifiche(giorno: workedDay) {
+    if (typeof giorno.giorno === 'string') giorno.giorno = new Date(giorno.giorno);
+    
+    DB.addWorkedDay(giorno);
 
     // Logica per salvare le modifiche...
     editandoIndex = -1; // Resetta l'indice dopo il salvataggio
@@ -40,10 +42,16 @@
 
 <div>
   <p>se devi modificare le fasce orarie o la data schiacciaci sopra!</p>
-  {#each giorniLavorati as giorno, idx}
+  {#each workedDays as giorno, idx}
+    {#if !workedDays[idx - 1] || getMonth(workedDays[idx - 1].giorno) != getMonth(workedDays[idx].giorno)}
+      <div class="mt-6 mb-2 p-2">
+        <span class="font-medium text-xl">{format(giorno.giorno, 'MMMM yy')}</span>
+        <hr />
+      </div>
+    {/if}
+
     <div class=" bg-white shadow-md mb-4 p-4">
       <div class="flex justify-between items-center rounded-lg">
-        <!-- Sezione Sinistra: Data e Ore lavorate -->
         <div>
           {#if idx !== editDate}
             <span
@@ -53,9 +61,7 @@
               tabindex="0"
               aria-pressed="true"
               on:click={() => modificaData(idx)}
-              on:keypress={() => {
-                console.log('sium');
-              }}>{format(giorno.giorno, 'iiii d/M/y')}</span
+              on:keypress={() => {}}>{format(giorno.giorno, 'iiii d/M/y')}</span
             >
           {:else}
             <div class="mb-4">
@@ -151,7 +157,7 @@
       {/each}
 
       <button
-        on:click={() => eliminaRecord(giorno)}
+        on:click={() => deleteWorkedDay(giorno)}
         class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-5 mt-2 rounded focus:outline-none focus:shadow-outline"
       >
         Elimina

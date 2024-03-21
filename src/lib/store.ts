@@ -1,4 +1,4 @@
+import type { workedDay } from 'src/types';
 import { writable } from 'svelte/store';
-import type { WORKEDDAY } from '../inizializzaDb';
 
-export const daysOBS = writable<WORKEDDAY[]>([]);
+export const daysOBS = writable<workedDay[]>([]);

@@ -1,28 +1,21 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import type { WORKEDDAY } from '../../inizializzaDb';
-  import { calcolaGuadagnoMensile, calcolaYourCar } from '../../lib/helper';
-  import { daysOBS } from '../../lib/store';
+  import { onMount } from 'svelte';
+  import { parse, format } from 'date-fns';
+  import type { workedDay } from '../types';
+  import { DB } from '$lib/database';
 
-  let guadagniMensili: { mese: number; guadagno: number; yourCar: number }[] = [];
+  let guadagniMensili: Map<string, { totalWage: number }> = new Map();
 
-  let giorni: WORKEDDAY[] = [];
-
-  // Reactive statement to update giorni whenever daysOBS changes
-  $: if ($daysOBS) {
-    giorni = $daysOBS;
-    calcolaGuadagniMensili();
-  }
-
-  function calcolaGuadagniMensili() {
-    guadagniMensili = [];
-    for (let mese = 0; mese < 12; mese++) {
-      guadagniMensili.push({
-        mese: mese,
-        guadagno: calcolaGuadagnoMensile(giorni, mese),
-        yourCar: calcolaYourCar(giorni, mese)
+  async function calcolaGuadagniMensili() {
+    guadagniMensili = new Map<string, { totalWage: number }>();
+    for (const wage of (await DB.getWorkedDays()) ?? []) {
+      const data = format(wage.giorno, 'yyyy-MM');
+      if (guadagniMensili.get(data)) continue;
+      guadagniMensili.set(data, {
+        totalWage: await DB.getTotalCompensationOfMouth(wage.giorno)
       });
     }
+    guadagniMensili = guadagniMensili;
   }
 
   // Initial calculation on mount
@@ -32,15 +25,13 @@
 </script>
 
 <ul>
-  {#each guadagniMensili as guadagnoMensile}
-    <li class="flex justify-between items-center max-w-xl m-auto">
-      <span class="w-[calculated-width]">
-        Mese: {guadagnoMensile.mese}, Guadagno: €{guadagnoMensile.guadagno} + viaggi € {40 *
-          guadagnoMensile.yourCar} =
+  {#each guadagniMensili.entries() as [k, v]}
+    <div class="bg-white p-5 m-5 border rounded flex flex-col">
+      <span class="text-bold text-xl">{format(parse(k, 'yyyy-MM', new Date()), 'MMMM')}</span>
+      <span
+        >Totale per questo mese:
+        <span class="text-green-600 text-lg">€ {v.totalWage}</span>
       </span>
-      <span class="tabular-nums">
-        💶 {guadagnoMensile.guadagno + 40 * guadagnoMensile.yourCar}
-      </span>
-    </li>
+    </div>
   {/each}
 </ul>
