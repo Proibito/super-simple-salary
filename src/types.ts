@@ -1,4 +1,4 @@
-import type { DBSchema } from "idb";
+import type { DBSchema } from 'idb';
 
 export interface workedDay {
   giorno: Date;

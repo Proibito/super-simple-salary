@@ -5,7 +5,7 @@
 
 <div
   bind:this={ref}
-  class="fixed h-screen top-0 w-full bg-slate-300 bg-opacity-60 flex align-middle justify-center flex-wrap p-5"
+  class="fixed top-0 flex h-screen w-full flex-wrap justify-center bg-slate-300 bg-opacity-60 p-5 align-middle"
 >
   <slot />
 </div>

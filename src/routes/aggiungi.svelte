@@ -25,76 +25,62 @@
     const parseGiorno = new Date(giorno); // todo da cambiare
     console.log(parseGiorno);
 
-    await DB.addWorkedDay(
-      {
-        giorno: parseGiorno,
-        fasce_orarie: fasceOrarie,
-        viaggio,
-        yourCar
-      },
-      giorno
-    );
+    await DB.addWorkedDay({
+      giorno: parseGiorno,
+      fasce_orarie: fasceOrarie,
+      viaggio,
+      yourCar
+    });
 
-    // daysOBS.update((giorno) => {
-    //   return [
-    //     ...giorno,
-    //     {
-    //       giorno: parseGiorno,
-    //       fasce_orarie: fasceOrarie,
-    //       viaggio,
-    //       yourCar
-    //     }
-    //   ];
-    // });
     toggleAggiungi();
   }
 </script>
 
-<div class="z-50 fixed bg-white w-full h-full overflow-y-auto flex items-center">
+<div class="fixed z-50 flex h-full w-full items-center overflow-y-auto bg-white">
   <form
     on:submit|preventDefault={salvaGiornoLavorato}
-    class="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg"
+    class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-md"
   >
     <button
-      class="font-bold py-2 px-3 text-sm rounded-md shadow-md border mb-5"
+      class="mb-5 rounded-md border px-3 py-2 text-sm font-bold shadow-md"
       on:click={toggleAggiungi}>chiudi</button
     >
     <div class="mb-4">
-      <label for="giorno" class="block text-gray-700 text-sm font-bold mb-2">Giorno:</label>
+      <label for="giorno" class="mb-2 block text-sm font-bold text-gray-700">Giorno:</label>
       <input
         type="date"
         bind:value={giorno}
         id="giorno"
-        class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
       />
     </div>
 
     <!-- add radio viaggio -->
     <div class="mb-4">
-      <label for="viaggio" class="block text-gray-700 text-sm font-bold mb-2">Viaggio:</label>
+      <label for="viaggio" class="mb-2 block text-sm font-bold text-gray-700">Viaggio:</label>
       <input
         type="checkbox"
         bind:checked={viaggio}
         id="viaggio"
-        class="shadow border rounded py-2 px-5 w-5 h-5 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        class="focus:shadow-outline h-5 w-5 rounded border px-5 py-2 leading-tight text-gray-700 shadow focus:outline-none"
       />
 
       <!-- add radio viaggio -->
       <div class="mb-4">
-        <label for="yourCar" class="block text-gray-700 text-sm font-bold mb-2"
+        <label for="yourCar" class="mb-2 block text-sm font-bold text-gray-700"
           >Con la tua macchina:</label
         >
         <input
           type="checkbox"
           bind:checked={yourCar}
           id="yourcar"
-          class="shadow border rounded py-2 px-5 w-5 h-5 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          class="focus:shadow-outline h-5 w-5 rounded border px-5 py-2 leading-tight text-gray-700 shadow focus:outline-none"
         />
 
         {#each fasceOrarie as fascia, index}
-          <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="mb-4 grid grid-cols-3 gap-2">
             <div>
-              <label for={`inizio-${index}`} class="block text-gray-700 text-sm font-bold mb-2"
+              <label for={`inizio-${index}`} class="mb-2 block text-sm font-bold text-gray-700"
                 >Inizio:</label
               >
               <input
@@ -102,19 +88,19 @@
                 bind:value={fascia.inizio}
                 id={`inizio-${index}`}
                 step="900"
-                class="shadow w-full block border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline block w-full rounded border py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 required
               />
             </div>
             <div>
-              <label for={`fine-${index}`} class="block text-gray-700 text-sm font-bold mb-2"
+              <label for={`fine-${index}`} class="mb-2 block text-sm font-bold text-gray-700"
                 >Fine:</label
               >
               <input
                 type="time"
                 bind:value={fascia.fine}
                 id={`fine-${index}`}
-                class="shadow w-full block border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline block w-full rounded border py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 step="900"
                 required
               />
@@ -123,7 +109,7 @@
               <div class="flex items-end justify-center">
                 <button
                   on:click={() => rimuoviFasciaOraria(index)}
-                  class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  class="focus:shadow-outline rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
                   >Rimuovi</button
                 >
               </div>
@@ -135,13 +121,13 @@
           <button
             on:click={() => aggiungiFasciaOraria()}
             type="button"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
           >
             Aggiungi Fascia Oraria
           </button>
           <button
             type="submit"
-            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            class="focus:shadow-outline rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700 focus:outline-none"
           >
             Salva Giorno Lavorato
           </button>

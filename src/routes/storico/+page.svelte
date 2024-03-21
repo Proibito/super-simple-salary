@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { parse, format } from 'date-fns';
-  import type { workedDay } from '../types';
   import { DB } from '$lib/database';
 
   let guadagniMensili: Map<string, { totalWage: number }> = new Map();
@@ -26,11 +25,11 @@
 
 <ul>
   {#each guadagniMensili.entries() as [k, v]}
-    <div class="bg-white p-5 m-5 border rounded flex flex-col">
+    <div class="m-5 flex flex-col rounded border bg-white p-5">
       <span class="text-bold text-xl">{format(parse(k, 'yyyy-MM', new Date()), 'MMMM')}</span>
       <span
         >Totale per questo mese:
-        <span class="text-green-600 text-lg">€ {v.totalWage}</span>
+        <span class="text-lg text-green-600">€ {v.totalWage}</span>
       </span>
     </div>
   {/each}

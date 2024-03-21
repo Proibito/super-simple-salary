@@ -8,7 +8,7 @@
   import { setDefaultOptions } from 'date-fns';
   import { it } from 'date-fns/locale';
   import Portal from './Portal.svelte';
-  import Aggiungi from './Aggiungi.svelte';
+  import Aggiungi from './aggiungi.svelte';
 
   let visibleAdd = false;
   $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
@@ -55,7 +55,7 @@
     Stipendio
     <svelte:fragment slot="trail">
       <button
-        class="font-bold bg-green-700 text-white py-2 px-3 text-sm rounded-md shadow-md"
+        class="rounded-md bg-green-700 px-3 py-2 text-sm font-bold text-white shadow-md"
         on:click={() => (visibleAdd = true)}>aggiungi</button
       >
     </svelte:fragment>
@@ -72,7 +72,7 @@
 <!-- Portal stuff for menu -->
 {#if showPortal}
   <Portal>
-    <div class="bg-white w-[90%] min-h-[50%] rounded">
+    <div class="min-h-[50%] w-[90%] rounded bg-white">
       <button on:click={() => (showPortal = false)}>Chiudi</button>
 
       <div class="flex flex-col">

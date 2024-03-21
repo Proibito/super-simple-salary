@@ -154,11 +154,11 @@ class DatabaseManager {
     return totalTravel;
   }
 
-  async getTotalCompensationOfMouth(month: Date){
+  async getTotalCompensationOfMouth(month: Date) {
     const hourlyWage = DB.getBaseWage();
     const totalHoursWorked = await DB.getHoursWorkedMonth(month);
     const travelTotal = await DB.getWorkWithTravelOfMouth(month);
-    return totalHoursWorked * hourlyWage + travelTotal * 20
+    return totalHoursWorked * hourlyWage + travelTotal * 20;
   }
 }
 

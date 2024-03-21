@@ -20,7 +20,7 @@
 </script>
 
 <div>
-  <p class="text-xl my-5">
+  <p class="my-5 text-xl">
     Il tuo stipendio di {format(new Date(), 'MMMM')} fino ad ora: <br />€
     {totalWageMonth} 🤑
   </p>

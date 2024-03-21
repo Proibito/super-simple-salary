@@ -1,7 +1,7 @@
 <script lang="ts">
   import { format, getMonth } from 'date-fns';
   import { calcolaOre, calculateEarningDat } from '../lib/helper';
-  import type { workedDay } from 'src/types';
+  import type { workedDay } from '../types';
   import { DB } from '$lib/database';
 
   let workedDays: workedDay[] = [];
@@ -30,7 +30,7 @@
 
   async function salvaModifiche(giorno: workedDay) {
     if (typeof giorno.giorno === 'string') giorno.giorno = new Date(giorno.giorno);
-    
+
     DB.addWorkedDay(giorno);
 
     // Logica per salvare le modifiche...
@@ -44,14 +44,14 @@
   <p>se devi modificare le fasce orarie o la data schiacciaci sopra!</p>
   {#each workedDays as giorno, idx}
     {#if !workedDays[idx - 1] || getMonth(workedDays[idx - 1].giorno) != getMonth(workedDays[idx].giorno)}
-      <div class="mt-6 mb-2 p-2">
-        <span class="font-medium text-xl">{format(giorno.giorno, 'MMMM yy')}</span>
+      <div class="mb-2 mt-6 p-2">
+        <span class="text-xl font-medium">{format(giorno.giorno, 'MMMM yy')}</span>
         <hr />
       </div>
     {/if}
 
-    <div class=" bg-white shadow-md mb-4 p-4">
-      <div class="flex justify-between items-center rounded-lg">
+    <div class=" mb-4 bg-white p-4 shadow-md">
+      <div class="flex items-center justify-between rounded-lg">
         <div>
           {#if idx !== editDate}
             <span
@@ -65,16 +65,16 @@
             >
           {:else}
             <div class="mb-4">
-              <label for="giorno" class="block text-gray-700 text-sm font-bold mb-2">Giorno:</label>
+              <label for="giorno" class="mb-2 block text-sm font-bold text-gray-700">Giorno:</label>
               <input
                 type="date"
                 bind:value={giorno.giorno}
                 id="giorno"
-                class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
               />
             </div>
             <button
-              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
               on:click={() => salvaModifiche(giorno)}
             >
               Salva
@@ -111,12 +111,12 @@
           >
         </div>
 
-        <div class="text-right flex items-center">
-          <span class="text-lg font-bold text-green-500 mr-4">€ {calculateEarningDat(giorno)}</span>
+        <div class="flex items-center text-right">
+          <span class="mr-4 text-lg font-bold text-green-500">€ {calculateEarningDat(giorno)}</span>
         </div>
       </div>
       {#each giorno.fasce_orarie as fascia, index}
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
           {#if editandoIndex !== index || giornoPerFasce !== idx}
             <!-- Visualizza come testo -->
 
@@ -128,22 +128,22 @@
             <div class="block gap-2">
               <input
                 type="time"
-                class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 bind:value={fascia.inizio}
               />
               <input
                 type="time"
-                class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 bind:value={fascia.fine}
               />
               <button
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
                 on:click={() => salvaModifiche(giorno)}
               >
                 Salva
               </button>
               <button
-                class="bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
                 on:click={() => {
                   giorno.fasce_orarie.splice(index);
                   salvaModifiche(giorno);
@@ -158,7 +158,7 @@
 
       <button
         on:click={() => deleteWorkedDay(giorno)}
-        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-5 mt-2 rounded focus:outline-none focus:shadow-outline"
+        class="focus:shadow-outline mt-2 rounded bg-red-500 px-5 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
       >
         Elimina
       </button>
