@@ -14,6 +14,8 @@
         totalWage: await DB.getTotalCompensationOfMouth(wage.giorno)
       });
     }
+    console.log(guadagniMensili);
+
     guadagniMensili = guadagniMensili;
   }
 

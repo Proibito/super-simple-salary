@@ -95,9 +95,8 @@ class DatabaseManager {
     const index = store.index('giorno');
 
     // Get first and last day
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), month.getMonth(), 1);
-    const lastDayOfMonth = new Date(now.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
 
     // Utilizza IDBKeyRange per definire il range di ricerca basato su date
     const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
@@ -140,9 +139,9 @@ class DatabaseManager {
     const store = tx.objectStore('giorni_lavorati');
     const index = store.index('giorno');
 
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), month.getMonth(), 1);
-    const lastDayOfMonth = new Date(now.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
 
     const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
 

@@ -5,8 +5,8 @@
   import { DB } from '$lib/database';
 
   let workedDays: workedDay[] = [];
-  DB._workedDays.subscribe((value) => {
-    workedDays = value;
+  DB._workedDays.subscribe(async () => {
+    workedDays = (await DB.getWorkedDays()) ?? [];
     workedDays.sort((a, b) => b.giorno.getTime() - a.giorno.getTime());
   });
 
