@@ -80,7 +80,6 @@ class DatabaseManager {
       asc ? a.giorno.getTime() - b.giorno.getTime() : b.giorno.getTime() - a.giorno.getTime()
     );
 
-    this._workedDays.set(sortedResult);
     return sortedResult;
   }
 
@@ -139,7 +138,6 @@ class DatabaseManager {
     const store = tx.objectStore('giorni_lavorati');
     const index = store.index('giorno');
 
-
     const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
     const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
 
@@ -153,11 +151,31 @@ class DatabaseManager {
     return totalTravel;
   }
 
+  async getYourCarTravel(month: Date) {
+    const db = await this.dbPromise;
+    const tx = db.transaction('giorni_lavorati', 'readonly');
+    const store = tx.objectStore('giorni_lavorati');
+    const index = store.index('giorno');
+
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
+
+    let totalTravel = 0;
+    const allDaysWorked = await index.getAll(range);
+    for (const day of allDaysWorked) {
+      totalTravel += day.yourCar ? 40 : 0;
+    }
+    return totalTravel;
+  }
+
   async getTotalCompensationOfMouth(month: Date) {
     const hourlyWage = DB.getBaseWage();
     const totalHoursWorked = await DB.getHoursWorkedMonth(month);
     const travelTotal = await DB.getWorkWithTravelOfMouth(month);
-    return totalHoursWorked * hourlyWage + travelTotal * 20;
+    const yourCar = await DB.getYourCarTravel(month);
+    return totalHoursWorked * hourlyWage + travelTotal * 20 + yourCar;
   }
 }
 

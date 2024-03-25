@@ -1,5 +1,5 @@
 import { differenceInMinutes, getMonth, setHours, setMinutes } from 'date-fns';
-import type { fascia_oraria, workedDay } from 'src/types';
+import type { fascia_oraria, workedDay } from '../types';
 
 export function calcolaOre(fasce: workedDay['fasce_orarie']): number {
   let tot = 0;
@@ -79,5 +79,7 @@ export function calcolaYourCar(days: workedDay[], month: number): number {
 }
 
 export function calculateEarningDat(giorno: workedDay): number {
-  return calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0);
+  return (
+    calcolaOre(giorno.fasce_orarie) * 10 + (giorno.viaggio ? 2 * 10 : 0) + (giorno.yourCar ? 40 : 0)
+  );
 }

@@ -37,6 +37,7 @@
 
 <svelte:head>
   {@html webManifest}
+  <title>Super simple Salary</title>
 </svelte:head>
 
 {#if !loaded}
@@ -72,16 +73,18 @@
 <!-- Portal stuff for menu -->
 {#if showPortal}
   <Portal>
-    <div class="min-h-[50%] w-[90%] rounded bg-white">
+    <div class="min-h-[50%] w-[90%] rounded bg-white p-5">
       <button on:click={() => (showPortal = false)}>Chiudi</button>
 
-      <div class="flex flex-col">
+      <div class="mt-5 flex flex-col gap-2">
+        <hr />
         {#each links as link}
           <a
             href={`./${link == 'home' ? '' : link}`}
-            class="font-bold underline"
+            class="font-bold"
             on:click={() => (showPortal = false)}>{link}</a
           >
+          <hr />
         {/each}
       </div>
     </div>

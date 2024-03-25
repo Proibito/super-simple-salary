@@ -19,7 +19,7 @@
   });
 </script>
 
-<div>
+<div class="m-auto lg:w-1/2">
   <p class="my-5 text-xl">
     Il tuo stipendio di {format(new Date(), 'MMMM')} fino ad ora: <br />€
     {totalWageMonth} 🤑
