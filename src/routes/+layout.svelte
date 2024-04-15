@@ -14,7 +14,8 @@
   $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
   let loaded: boolean = false;
   let showPortal: boolean = false;
-  const links = ['home', 'storico', 'statistiche'];
+  // TODO improve this menu
+  const links = ['home', 'storico', 'statistiche', "PaymentHistory"];
 
   function toggleAggiungi() {
     visibleAdd = !visibleAdd;

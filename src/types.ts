@@ -12,6 +12,12 @@ export interface fascia_oraria {
   fine: string;
 }
 
+export interface PaymentHistory {
+  month_year: string,
+  payment: number
+}
+
+
 export interface MyDB extends DBSchema {
   giorni_lavorati: {
     value: workedDay;
@@ -25,5 +31,10 @@ export interface MyDB extends DBSchema {
   viaggio: {
     key: string;
     value: number;
+  };
+  MonthlyPayments: {
+    key: string,
+    value: PaymentHistory,
+    indexes: { month_year: string }
   };
 }

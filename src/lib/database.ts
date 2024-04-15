@@ -1,49 +1,18 @@
 import { writable } from 'svelte/store';
 import { openDB, type IDBPDatabase } from 'idb';
-import type { MyDB, fascia_oraria, workedDay } from '../types';
+import type { MyDB, fascia_oraria, workedDay, PaymentHistory } from '../types';
 import { ErrorResponse, SuccessResponse } from './logger';
 import { addDays, differenceInHours, parse, format } from 'date-fns';
 
 class DatabaseManager {
+  _workedDays = writable<workedDay[]>([]);
   private dbPromise!: Promise<IDBPDatabase<MyDB>>;
 
-  _workedDays = writable<workedDay[]>([]);
-  constructor() {}
+  constructor() {
+  }
 
   async startDatabase() {
     this.dbPromise = this.initializeDB();
-  }
-
-  private async initializeDB(): Promise<IDBPDatabase<MyDB>> {
-    return openDB<MyDB>('MyDB', 2, {
-      upgrade(db, old, newVersion, transition) {
-        if (!db.objectStoreNames.contains('giorni_lavorati')) {
-          const giorniLavoratiStore = db.createObjectStore('giorni_lavorati');
-          giorniLavoratiStore.createIndex('giorno', 'giorno');
-        }
-        if (!db.objectStoreNames.contains('paga_base')) {
-          db.createObjectStore('paga_base');
-          transition.objectStore('paga_base').put(10, 'main');
-        }
-        if (!db.objectStoreNames.contains('viaggio')) {
-          db.createObjectStore('viaggio');
-          transition.objectStore('viaggio').put(2, 'main');
-        }
-
-        if (old < 2) {
-          const giorniLavoratiStore = transition.objectStore('giorni_lavorati');
-
-          giorniLavoratiStore.openCursor().then((cursor) => {
-            if (!cursor) return;
-            do {
-              const record = cursor.value;
-              record.viaggio = true;
-              cursor.update(record);
-            } while (cursor.continue());
-          });
-        }
-      }
-    });
   }
 
   async addWorkedDay(workedDay: workedDay) {
@@ -176,6 +145,68 @@ class DatabaseManager {
     const travelTotal = await DB.getWorkWithTravelOfMouth(month);
     const yourCar = await DB.getYourCarTravel(month);
     return totalHoursWorked * hourlyWage + travelTotal * 20 + yourCar;
+  }
+
+  async getPaymentHistory() {
+    const db = await this.dbPromise;
+    const tx = db.transaction('MonthlyPayments', 'readonly');
+    const store = tx.objectStore('MonthlyPayments');
+    return store.getAll();
+  }
+
+  async getSinglePaymentHistory(id: string) {
+    const db = await this.dbPromise;
+    const tx = db.transaction('MonthlyPayments', 'readonly');
+    const store = tx.objectStore('MonthlyPayments');
+    return store.get(id);
+  }
+
+  async updatePaymentHistory(key: string, val: number) {
+    const db = await this.dbPromise;
+    const tx = db.transaction('MonthlyPayments', 'readwrite');
+    const store = tx.objectStore('MonthlyPayments');
+    if (!store) throw Error('errore nel db');
+    const paymentRecord: PaymentHistory = {
+      month_year: key,
+      payment: val
+    };
+    return await store.put(paymentRecord);
+  }
+
+  private async initializeDB(): Promise<IDBPDatabase<MyDB>> {
+    return openDB<MyDB>('MyDB', 3, {
+      upgrade(db, old, newVersion, transition) {
+        if (!db.objectStoreNames.contains('giorni_lavorati')) {
+          const giorniLavoratiStore = db.createObjectStore('giorni_lavorati');
+          giorniLavoratiStore.createIndex('giorno', 'giorno');
+        }
+        if (!db.objectStoreNames.contains('paga_base')) {
+          db.createObjectStore('paga_base');
+          transition.objectStore('paga_base').put(10, 'main');
+        }
+        if (!db.objectStoreNames.contains('viaggio')) {
+          db.createObjectStore('viaggio');
+          transition.objectStore('viaggio').put(2, 'main');
+        }
+        if (!db.objectStoreNames.contains('MonthlyPayments')) {
+          const monthlyPaymentsStore = db.createObjectStore('MonthlyPayments', { keyPath: 'month_year' });
+          monthlyPaymentsStore.createIndex('month_year', ['month', 'year'], { unique: false });
+        }
+
+        if (old < 2) {
+          const giorniLavoratiStore = transition.objectStore('giorni_lavorati');
+
+          giorniLavoratiStore.openCursor().then((cursor) => {
+            if (!cursor) return;
+            do {
+              const record = cursor.value;
+              record.viaggio = true;
+              cursor.update(record);
+            } while (cursor.continue());
+          });
+        }
+      }
+    });
   }
 }
 
