@@ -51,7 +51,7 @@
 
 </script>
 
-<div class="w-1/3 m-auto my-2">
+<div class="lg:w-1/3 m-auto my-2">
 
   {#each guadagniMensili.entries() as [k, v]}
     <div class="flex flex-col rounded border p-3 gap-2">
