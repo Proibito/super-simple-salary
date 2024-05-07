@@ -3,13 +3,13 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { MyDB, fascia_oraria, workedDay, PaymentHistory } from '../types';
 import { ErrorResponse, SuccessResponse } from './logger';
 import { addDays, differenceInHours, parse, format } from 'date-fns';
+import { calcolaOre, calculateEarningDat } from './helper';
 
 class DatabaseManager {
   _workedDays = writable<workedDay[]>([]);
   private dbPromise!: Promise<IDBPDatabase<MyDB>>;
 
-  constructor() {
-  }
+  constructor() {}
 
   async startDatabase() {
     this.dbPromise = this.initializeDB();
@@ -66,15 +66,12 @@ class DatabaseManager {
     const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
     const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    // Utilizza IDBKeyRange per definire il range di ricerca basato su date
     const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
 
     let totalWorked = 0;
     const allDaysWorked = await index.getAll(range);
     for (const day of allDaysWorked) {
-      for (const timeSlot of day.fasce_orarie) {
-        totalWorked += this.calculateTimeSlot(timeSlot);
-      }
+      totalWorked += calcolaOre(day.fasce_orarie);
     }
     return totalWorked;
   }
@@ -142,6 +139,8 @@ class DatabaseManager {
   async getTotalCompensationOfMouth(month: Date) {
     const hourlyWage = DB.getBaseWage();
     const totalHoursWorked = await DB.getHoursWorkedMonth(month);
+    console.log(totalHoursWorked);
+
     const travelTotal = await DB.getWorkWithTravelOfMouth(month);
     const yourCar = await DB.getYourCarTravel(month);
     return totalHoursWorked * hourlyWage + travelTotal * 20 + yourCar;
@@ -189,7 +188,9 @@ class DatabaseManager {
           transition.objectStore('viaggio').put(2, 'main');
         }
         if (!db.objectStoreNames.contains('MonthlyPayments')) {
-          const monthlyPaymentsStore = db.createObjectStore('MonthlyPayments', { keyPath: 'month_year' });
+          const monthlyPaymentsStore = db.createObjectStore('MonthlyPayments', {
+            keyPath: 'month_year'
+          });
           monthlyPaymentsStore.createIndex('month_year', ['month', 'year'], { unique: false });
         }
 
