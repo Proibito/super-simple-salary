@@ -14,8 +14,15 @@
   $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
   let loaded: boolean = false;
   let showPortal: boolean = false;
-  // TODO improve this menu
-  const links = ['home', 'storico', 'statistiche', "PaymentHistory"];
+
+  type menuItem = { label: string; link: string };
+  const links: menuItem[] = [
+    { label: 'home', link: 'home' },
+    { label: 'storico', link: 'storico' },
+    // { label: 'statistiche', link: 'statistiche' },
+    { label: 'Payment History', link: 'PaymentHistory' },
+    { label: 'home', link: '' }
+  ];
 
   function toggleAggiungi() {
     visibleAdd = !visibleAdd;
@@ -79,11 +86,11 @@
 
       <div class="mt-5 flex flex-col gap-2">
         <hr />
-        {#each links as link}
+        {#each links as single}
           <a
-            href={`./${link == 'home' ? '' : link}`}
+            href={`./${single.link == 'home' ? '' : single.link}`}
             class="font-bold"
-            on:click={() => (showPortal = false)}>{link}</a
+            on:click={() => (showPortal = false)}>{single.label}</a
           >
           <hr />
         {/each}

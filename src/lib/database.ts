@@ -139,8 +139,6 @@ class DatabaseManager {
   async getTotalCompensationOfMouth(month: Date) {
     const hourlyWage = DB.getBaseWage();
     const totalHoursWorked = await DB.getHoursWorkedMonth(month);
-    console.log(totalHoursWorked);
-
     const travelTotal = await DB.getWorkWithTravelOfMouth(month);
     const yourCar = await DB.getYourCarTravel(month);
     return totalHoursWorked * hourlyWage + travelTotal * 20 + yourCar;
