@@ -2,11 +2,13 @@
   import { daysOBS } from '$lib/store';
   import { format, getMonth, getYear, subMonths, addMonths } from 'date-fns';
   import type { workedDay } from '../../types';
-  import { sumToCompensation, calcolaOre } from '$lib/helper';
+  import { sumToCompensation, calcolaOre, sumToCompensationDetailed } from '$lib/helper';
 
   let allDays: workedDay[] = [];
   let currentSelection = new Date();
   let currentDaysDisplayed: workedDay[] = [];
+  let detailed_compensation: { totalHours: number; totalTravel: number; daily_allowance: number } =
+    {};
 
   let daysList: HTMLUListElement;
   let totalSpan: Element;
@@ -17,9 +19,11 @@
   });
 
   function getDays(date: Date): workedDay[] {
-    return allDays.filter(
+    const ret = allDays.filter(
       (all) => getMonth(all.giorno) == getMonth(date) && getYear(all.giorno) == getYear(date)
     );
+    detailed_compensation = sumToCompensationDetailed(ret);
+    return ret;
   }
 
   function copyToClipboard() {
@@ -43,15 +47,17 @@
       return text;
     }
 
-    textToCopy += totalSpan.textContent?.trim();
+    for (let i of totalSpan.childNodes) {
+      if (i.nodeName == 'P') textToCopy += i.textContent?.trim() + '\n';
+    }
+
+    console.log(totalSpan.childNodes);
 
     // Copia il testo negli appunti
     navigator.clipboard
       .writeText(textToCopy)
       .then(() => {
         console.log(textToCopy);
-
-        // alert('Testo copiato!');
       })
       .catch((error) => {
         console.error('Errore durante la copia:', error);
@@ -105,7 +111,21 @@
       </li>
     {/each}
   </ul>
-  <span id="total-span" bind:this={totalSpan}
-    >Totale {format(currentSelection, 'MMMM')}: € {sumToCompensation(currentDaysDisplayed)}</span
-  >
+  <div id="total-span" bind:this={totalSpan}>
+    <p>
+      Totale ore lavorate: {detailed_compensation.totalHours} = € {detailed_compensation.totalHours *
+        10}
+    </p>
+    <p>
+      Totale ore viaggio: {detailed_compensation.totalTravel} = € {detailed_compensation.totalTravel *
+        10}
+    </p>
+    <p>
+      Totale diaria: {detailed_compensation.daily_allowance} = € {detailed_compensation.daily_allowance *
+        40}
+    </p>
+    <p>
+      Totale {format(currentSelection, 'MMMM')}: € {sumToCompensation(currentDaysDisplayed)}
+    </p>
+  </div>
 </div>

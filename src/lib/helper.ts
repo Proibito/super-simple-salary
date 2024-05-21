@@ -58,19 +58,6 @@ export function getDayWithTravel(days: workedDay[], month: number): number {
   return tot;
 }
 
-/**
- * @deprecated  do not utilize
- *  */
-export function calcolaGuadagnoMensile(days: workedDay[], month: number): number {
-  const oreLavorate = getHoursOfMonth(days, month);
-  const pagaTotale = oreLavorate * 10;
-
-  const giorniDiViaggio = getDayWithTravel(days, month);
-  const extraViaggio = giorniDiViaggio * 10;
-
-  return pagaTotale + extraViaggio;
-}
-
 export function sumToCompensation(days: workedDay[]): number {
   let totalWorked = 0;
   let travelTotal = 0;
@@ -83,6 +70,24 @@ export function sumToCompensation(days: workedDay[]): number {
 
   return (totalWorked + travelTotal) * 10 + yourCar;
 }
+
+export function sumToCompensationDetailed(days: workedDay[]): {totalHours: number, totalTravel: number, daily_allowance: number} {
+  let totalWorked = 0;
+  let travelTotal = 0;
+  let yourCar = 0;
+  for (const day of days) {
+    travelTotal += day.viaggio ? 2 : 0;
+    totalWorked += calcolaOre(day.fasce_orarie);
+    yourCar += day.yourCar ? 1 : 0;
+  }
+
+  return {
+    totalHours: totalWorked,
+    totalTravel: travelTotal,
+    daily_allowance: yourCar
+  }
+}
+
 
 export function calcolaYourCar(days: workedDay[], month: number): number {
   let tot: number = 0;
