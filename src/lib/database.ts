@@ -3,7 +3,7 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { MyDB, fascia_oraria, workedDay, PaymentHistory } from '../types';
 import { ErrorResponse, SuccessResponse } from './logger';
 import { addDays, differenceInHours, parse, format } from 'date-fns';
-import { calcolaOre, calculateEarningDat } from './helper';
+import { calcolaOre } from './helper';
 
 class DatabaseManager {
   _workedDays = writable<workedDay[]>([]);
@@ -56,7 +56,7 @@ class DatabaseManager {
     return 10;
   }
 
-  async getHoursWorkedMonth(month: Date) {
+  async getHoursWorkedMonth(month: Date): Promise<number> {
     const db = await this.dbPromise;
     const tx = db.transaction('giorni_lavorati', 'readonly');
     const store = tx.objectStore('giorni_lavorati');

@@ -6,17 +6,14 @@
   let guadagniMensili: Map<string, number> = new Map();
   let totaleWageMap: Map<string, { totalWage: number }> = new Map();
 
-
   async function calcolaGuadagniMensili() {
     guadagniMensili = new Map<string, number>();
     for (const wage of (await DB.getWorkedDays()) ?? []) {
       const data = format(wage.giorno, 'yyyy-MM');
       if (guadagniMensili.get(data)) continue;
       const payment = await DB.getSinglePaymentHistory(data);
-      guadagniMensili.set(data, payment?.payment || 0
-      );
+      guadagniMensili.set(data, payment?.payment || 0);
     }
-
 
     guadagniMensili = guadagniMensili;
   }
@@ -48,28 +45,28 @@
     guadagniMensili.set(data, value);
     guadagniMensili = guadagniMensili;
   }
-
 </script>
 
-<div class="lg:w-1/3 m-auto my-2">
-
+<div class="m-auto my-2 flex flex-col gap-5 lg:w-1/3">
   {#each guadagniMensili.entries() as [k, v]}
-    <div class="flex flex-col rounded border p-3 gap-2">
-
+    <div class="flex flex-col gap-2 rounded border p-3">
       <div>
-
-        <p class="font-bold text-xl">Mese: {format(parse(k, 'yyyy-MM', new Date()), 'MMMM')}</p>
+        <p class="text-xl font-bold">Mese: {format(parse(k, 'yyyy-MM', new Date()), 'MMMM')}</p>
         {#if totaleWageMap.get(k)}
-          <span>Rimanenti: € {totaleWageMap.get(k)?.totalWage - v}</span>
+          <span>Rimanenti: € {totaleWageMap.get(k).totalWage - v}</span>
         {/if}
       </div>
-      <hr>
+      <hr />
       <div>
         <span>Ti hanno già dato:</span>
-        <div class="flex items-center align-middle gap-2">
+        <div class="flex items-center gap-2 align-middle">
           <span>€</span>
-          <input type="number" on:keyup={(event) => updateWage(event, k)} value={v}
-                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+          <input
+            type="number"
+            on:keyup={(event) => updateWage(event, k)}
+            value={v}
+            class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          />
         </div>
       </div>
     </div>

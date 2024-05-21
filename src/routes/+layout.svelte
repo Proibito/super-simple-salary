@@ -19,9 +19,8 @@
   const links: menuItem[] = [
     { label: 'home', link: 'home' },
     { label: 'storico', link: 'storico' },
-    // { label: 'statistiche', link: 'statistiche' },
-    { label: 'Payment History', link: 'PaymentHistory' },
-    { label: 'home', link: '' }
+    { label: 'statistiche', link: 'statistiche' },
+    { label: 'Payment History', link: 'PaymentHistory' }
   ];
 
   function toggleAggiungi() {
@@ -34,12 +33,13 @@
   onMount(async () => {
     const DB = (await import('$lib/database')).DB;
     DB.startDatabase().then(() => (loaded = true));
-
+    daysOBS.set([]);
     const giorniLavorati = await DB.getWorkedDays(true);
-    if (giorniLavorati && giorniLavorati.length > 0)
+    if (giorniLavorati && giorniLavorati.length > 0) {
       daysOBS.update((giorniEsistenti) => {
         return [...giorniEsistenti, ...giorniLavorati];
       });
+    }
   });
 </script>
 
@@ -69,7 +69,7 @@
       >
     </svelte:fragment>
   </AppBar>
-  <main class="px-2">
+  <main class="m-auto px-2 lg:w-1/2">
     <slot />
   </main>
 {/if}
