@@ -59,7 +59,7 @@
   }
 </script>
 
-<div>
+<div class="p-10">
   <!-- Navigation -->
   <div class="flex w-full px-16">
     <button
