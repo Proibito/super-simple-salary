@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  .btn {
+    @apply rounded-sm border p-2 px-3 dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .btn-suc {
+    @apply bg-green-700;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+  /* ... */
+}

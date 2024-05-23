@@ -14,9 +14,7 @@ const config = {
   },
 
   plugins: [
-    skeleton({
-      themes: { preset: ['wintry'] }
-    })
+
   ]
 };
 

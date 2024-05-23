@@ -68,9 +68,8 @@
     </svelte:fragment>
     Stipendio
     <svelte:fragment slot="trail">
-      <button
-        class="rounded-md bg-green-700 px-3 py-2 text-sm font-bold text-white shadow-md"
-        on:click={() => (visibleAdd = true)}>aggiungi</button
+      <button class="btn-suc btn" on:click={() => (visibleAdd = true)}
+        >Aggiungi</button
       >
     </svelte:fragment>
   </AppBar>
