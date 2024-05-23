@@ -1,7 +1,7 @@
 // database.ts
 import { format } from 'date-fns';
 import { daysOBS } from '$lib/store';
-import type { MyDB, workedDay } from './types';
+import type { MyDB, WorkedDay } from './types';
 import { ResponseType, sendResponse } from '$lib/logger';
 import { error } from '@sveltejs/kit';
 import type { IDBPDatabase } from 'idb';
@@ -9,12 +9,12 @@ import type { IDBPDatabase } from 'idb';
 let db: IDBPDatabase<MyDB>;
 export type DB = IDBPDatabase<MyDB>;
 
-export async function eliminaRecord(day: workedDay): Promise<object> {
+export async function eliminaRecord(day: WorkedDay): Promise<object> {
   if (!db) {
     return sendResponse(ResponseType.ERROR, 'Database not loaded');
   }
 
-  const key = format(day.giorno, 'yyyy-MM-dd');
+  const key = format(day.date, 'yyyy-MM-dd');
 
   try {
     const record = await db.get('giorni_lavorati', key);
@@ -23,7 +23,7 @@ export async function eliminaRecord(day: workedDay): Promise<object> {
       await db.delete('giorni_lavorati', key);
 
       daysOBS.update((old) => {
-        return old.filter((item) => item.giorno !== day.giorno);
+        return old.filter((item) => item.date !== day.date);
       });
 
       return sendResponse(ResponseType.SUCCESS);
@@ -35,16 +35,16 @@ export async function eliminaRecord(day: workedDay): Promise<object> {
   }
 }
 
-export async function updateRecord(day: workedDay): Promise<object> {
+export async function updateRecord(day: WorkedDay): Promise<object> {
   if (!db) {
     return { esito: 1, errore: 'database non caricato' };
   }
 
-  await db.put('giorni_lavorati', day, format(day.giorno, 'yyyy-MM-dd'));
+  await db.put('giorni_lavorati', day, format(day.date, 'yyyy-MM-dd'));
 
   daysOBS.update((old) => {
     return old.map((item) => {
-      if (item.giorno === day.giorno) {
+      if (item.date === day.date) {
         return day;
       } else return item;
     });
@@ -52,7 +52,7 @@ export async function updateRecord(day: workedDay): Promise<object> {
   return {};
 }
 
-export async function ottieniDateASC(): Promise<workedDay[]> {
+export async function ottieniDateASC(): Promise<WorkedDay[]> {
   if (!db) return [];
 
   const transaction = db.transaction('giorni_lavorati', 'readonly');

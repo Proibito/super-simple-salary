@@ -1,40 +1,39 @@
-import type { DBSchema } from 'idb';
+import type { DBSchema } from 'idb'
 
-export interface workedDay {
-  giorno: Date;
-  fasce_orarie: fascia_oraria[];
-  viaggio: boolean;
-  yourCar: boolean;
+export interface WorkedDay {
+  date: Date
+  timeSlots: TimeSlot[]
+  travel: boolean
+  carUsage: boolean
 }
 
-export interface fascia_oraria {
-  inizio: string;
-  fine: string;
+export interface TimeSlot {
+  start: string
+  end: string
 }
 
 export interface PaymentHistory {
-  month_year: string,
+  monthYear: string
   payment: number
 }
 
-
 export interface MyDB extends DBSchema {
-  giorni_lavorati: {
-    value: workedDay;
-    key: string;
-    indexes: { giorno: Date };
-  };
-  paga_base: {
-    key: string;
-    value: number;
-  };
-  viaggio: {
-    key: string;
-    value: number;
-  };
-  MonthlyPayments: {
-    key: string,
-    value: PaymentHistory,
-    indexes: { month_year: string }
-  };
+  workedDays: {
+    value: WorkedDay
+    key: string
+    indexes: { date: Date }
+  }
+  baseWage: {
+    key: string
+    value: number
+  }
+  travel: {
+    key: string
+    value: number
+  }
+  monthlyPayments: {
+    key: string
+    value: PaymentHistory
+    indexes: { monthYear: string }
+  }
 }

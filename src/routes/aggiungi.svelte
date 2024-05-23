@@ -1,42 +1,46 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext } from 'svelte'
   // import { daysOBS } from '../lib/store';
-  import { format } from 'date-fns';
-  import { DB } from '$lib/database';
+  import { format } from 'date-fns'
+  import { DB } from '$lib/database'
+  import type { TimeSlot, WorkedDay } from '../types'
 
-  const { toggleAggiungi } = getContext<{ toggleAggiungi: () => void }>('vision');
-  let giorno = format(new Date(), 'yyyy-MM-dd');
-  let viaggio = false;
-  let yourCar = false;
-  let fasceOrarie = [{ inizio: '', fine: '' }];
+  const { toggleAggiungi } = getContext<{ toggleAggiungi: () => void }>(
+    'vision'
+  )
+  let giorno = format(new Date(), 'yyyy-MM-dd')
+  let travel = false
+  let yourCar = false
+  let fasceOrarie: TimeSlot[] = [{ start: '', end: '' }]
 
   // Funzione per aggiungere una nuova fascia oraria
   function aggiungiFasciaOraria() {
-    fasceOrarie = [...fasceOrarie, { inizio: '', fine: '' }];
+    fasceOrarie = [...fasceOrarie, { start: '', end: '' }]
   }
 
   // Funzione per rimuovere una fascia oraria
   function rimuoviFasciaOraria(index: number) {
-    fasceOrarie = fasceOrarie.filter((_, i) => i !== index);
+    fasceOrarie = fasceOrarie.filter((_, i) => i !== index)
   }
 
   // Funzione per salvare il giorno lavorativo nel DB
   async function salvaGiornoLavorato() {
-    const parseGiorno = new Date(giorno); // todo da cambiare
-    console.log(parseGiorno);
+    const date = new Date(giorno)
+    const newWorkedDay: WorkedDay = {
+      date,
+      carUsage: yourCar,
+      timeSlots: fasceOrarie,
+      travel
+    }
+    await DB.addWorkedDay(newWorkedDay)
 
-    await DB.addWorkedDay({
-      giorno: parseGiorno,
-      fasce_orarie: fasceOrarie,
-      viaggio,
-      yourCar
-    });
-
-    toggleAggiungi();
+    toggleAggiungi()
   }
 </script>
 
-<div class="fixed z-50 flex h-full w-full items-center overflow-y-auto bg-white">
+<div
+  class="fixed z-50 flex h-full w-full items-center overflow-y-auto bg-white"
+>
   <form
     on:submit|preventDefault={salvaGiornoLavorato}
     class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-md"
@@ -46,7 +50,9 @@
       on:click={toggleAggiungi}>chiudi</button
     >
     <div class="mb-4">
-      <label for="giorno" class="mb-2 block text-sm font-bold text-gray-700">Giorno:</label>
+      <label for="giorno" class="mb-2 block text-sm font-bold text-gray-700"
+        >Giorno:</label
+      >
       <input
         type="date"
         bind:value={giorno}
@@ -57,10 +63,12 @@
 
     <!-- add radio viaggio -->
     <div class="mb-4">
-      <label for="viaggio" class="mb-2 block text-sm font-bold text-gray-700">Viaggio:</label>
+      <label for="viaggio" class="mb-2 block text-sm font-bold text-gray-700"
+        >Viaggio:</label
+      >
       <input
         type="checkbox"
-        bind:checked={viaggio}
+        bind:checked={travel}
         id="viaggio"
         class="focus:shadow-outline h-5 w-5 rounded border px-5 py-2 leading-tight text-gray-700 shadow focus:outline-none"
       />
@@ -80,12 +88,14 @@
         {#each fasceOrarie as fascia, index}
           <div class="mb-4 grid grid-cols-3 gap-2">
             <div>
-              <label for={`inizio-${index}`} class="mb-2 block text-sm font-bold text-gray-700"
+              <label
+                for={`inizio-${index}`}
+                class="mb-2 block text-sm font-bold text-gray-700"
                 >Inizio:</label
               >
               <input
                 type="time"
-                bind:value={fascia.inizio}
+                bind:value={fascia.start}
                 id={`inizio-${index}`}
                 step="900"
                 class="focus:shadow-outline block w-full rounded border py-2 leading-tight text-gray-700 shadow focus:outline-none"
@@ -93,12 +103,13 @@
               />
             </div>
             <div>
-              <label for={`fine-${index}`} class="mb-2 block text-sm font-bold text-gray-700"
-                >Fine:</label
+              <label
+                for={`fine-${index}`}
+                class="mb-2 block text-sm font-bold text-gray-700">Fine:</label
               >
               <input
                 type="time"
-                bind:value={fascia.fine}
+                bind:value={fascia.end}
                 id={`fine-${index}`}
                 class="focus:shadow-outline block w-full rounded border py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 step="900"

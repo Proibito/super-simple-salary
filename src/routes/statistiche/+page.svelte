@@ -1,12 +1,16 @@
 <script lang="ts">
   import { daysOBS } from '$lib/store';
   import { format, getMonth, getYear, subMonths, addMonths } from 'date-fns';
-  import type { workedDay } from '../../types';
-  import { sumToCompensation, calcolaOre, sumToCompensationDetailed } from '$lib/helper';
+  import type { WorkedDay } from '$lib/types';
+  import {
+    calculateTotalCompensation,
+    calculateTotalHours,
+    calculateDetailedCompensation
+  } from '$lib/utils/timeTrackingUtils';
 
-  let allDays: workedDay[] = [];
+  let allDays: WorkedDay[] = [];
   let currentSelection = new Date();
-  let currentDaysDisplayed: workedDay[] = [];
+  let currentDaysDisplayed: WorkedDay[] = [];
   let detailed_compensation: { totalHours: number; totalTravel: number; daily_allowance: number } =
     {};
 
@@ -18,11 +22,11 @@
     currentDaysDisplayed = getDays(currentSelection);
   });
 
-  function getDays(date: Date): workedDay[] {
+  function getDays(date: Date): WorkedDay[] {
     const ret = allDays.filter(
-      (all) => getMonth(all.giorno) == getMonth(date) && getYear(all.giorno) == getYear(date)
+      (all) => getMonth(all.date) == getMonth(date) && getYear(all.date) == getYear(date)
     );
-    detailed_compensation = sumToCompensationDetailed(ret);
+    detailed_compensation = calculateDetailedCompensation(ret);
     return ret;
   }
 
@@ -95,18 +99,18 @@
     {#each currentDaysDisplayed as day}
       <li class="py-2">
         <span class="info">
-          {format(day.giorno, 'PPP')}
-          {day.yourCar ? 'Con la macchina 🚗' : ''}
-          {day.viaggio ? '+ viaggio' : ''}
+          {format(day.date, 'PPP')}
+          {day.carUsage ? 'Con la macchina 🚗' : ''}
+          {day.travel ? '+ viaggio' : ''}
         </span>
         <ul class="list-inside list-disc">
-          {#each day.fasce_orarie as fascia_oraria}
-            <li>{fascia_oraria.inizio} - {fascia_oraria.fine}</li>
+          {#each day.timeSlots as fascia_oraria}
+            <li>{fascia_oraria.start} - {fascia_oraria.end}</li>
           {/each}
         </ul>
         <span class="final">
-          Tot ore giorno: {calcolaOre(day.fasce_orarie)}
-          {day.viaggio ? '+ 2' : ''} = {calcolaOre(day.fasce_orarie) + (day.viaggio ? 2 : 0)}
+          Tot ore giorno: {calculateTotalHours(day.timeSlots)}
+          {day.travel ? '+ 2' : ''} = {calculateTotalHours(day.timeSlots) + (day.travel ? 2 : 0)}
         </span>
       </li>
     {/each}
@@ -125,7 +129,9 @@
         40}
     </p>
     <p>
-      Totale {format(currentSelection, 'MMMM')}: € {sumToCompensation(currentDaysDisplayed)}
+      Totale {format(currentSelection, 'MMMM')}: € {calculateTotalCompensation(
+        currentDaysDisplayed
+      )}
     </p>
   </div>
 </div>

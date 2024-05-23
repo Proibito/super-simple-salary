@@ -1,46 +1,46 @@
 <script lang="ts">
-  import '../app.css';
-  import { pwaInfo } from 'virtual:pwa-info';
-  import { onMount, setContext } from 'svelte';
-  import { AppBar } from '@skeletonlabs/skeleton';
-  import IconAccessibility from '~icons/solar/hamburger-menu-outline';
-  import { daysOBS } from '../lib/store';
-  import { setDefaultOptions } from 'date-fns';
-  import { it } from 'date-fns/locale';
-  import Portal from './Portal.svelte';
-  import Aggiungi from './aggiungi.svelte';
+  import '../app.css'
+  import { pwaInfo } from 'virtual:pwa-info'
+  import { onMount, setContext } from 'svelte'
+  import { AppBar } from '@skeletonlabs/skeleton'
+  import IconAccessibility from '~icons/solar/hamburger-menu-outline'
+  import { daysOBS } from '../lib/store'
+  import { setDefaultOptions } from 'date-fns'
+  import { it } from 'date-fns/locale'
+  import Portal from './Portal.svelte'
+  import Aggiungi from './aggiungi.svelte'
 
-  let visibleAdd = false;
-  $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
-  let loaded: boolean = false;
-  let showPortal: boolean = false;
+  let visibleAdd = false
+  $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : ''
+  let loaded: boolean = false
+  let showPortal: boolean = false
 
-  type menuItem = { label: string; link: string };
+  type menuItem = { label: string; link: string }
   const links: menuItem[] = [
     { label: 'home', link: 'home' },
     { label: 'storico', link: 'storico' },
     { label: 'statistiche', link: 'statistiche' },
     { label: 'Payment History', link: 'PaymentHistory' }
-  ];
+  ]
 
   function toggleAggiungi() {
-    visibleAdd = !visibleAdd;
+    visibleAdd = !visibleAdd
   }
 
-  setDefaultOptions({ locale: it });
-  setContext('vision', { toggleAggiungi });
+  setDefaultOptions({ locale: it })
+  setContext('vision', { toggleAggiungi })
 
   onMount(async () => {
-    const DB = (await import('$lib/database')).DB;
-    DB.startDatabase().then(() => (loaded = true));
-    daysOBS.set([]);
-    const giorniLavorati = await DB.getWorkedDays(true);
+    const DB = (await import('$lib/database')).DB
+    DB.startDatabase().then(() => (loaded = true))
+    daysOBS.set([])
+    const giorniLavorati = await DB.getWorkedDays(true)
     if (giorniLavorati && giorniLavorati.length > 0) {
       daysOBS.update((giorniEsistenti) => {
-        return [...giorniEsistenti, ...giorniLavorati];
-      });
+        return [...giorniEsistenti, ...giorniLavorati]
+      })
     }
-  });
+  })
 </script>
 
 <svelte:head>
@@ -55,7 +55,12 @@
     <Aggiungi />
   {/if}
 
-  <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
+  <AppBar
+    gridColumns="grid-cols-3"
+    slotDefault="place-self-center"
+    slotTrail="place-content-end"
+    class="dark:bg-slate-950 dark:text-white"
+  >
     <svelte:fragment slot="lead">
       <button on:click={() => (showPortal = !showPortal)}>
         <IconAccessibility />
@@ -81,7 +86,9 @@
 <!-- Portal stuff for menu -->
 {#if showPortal}
   <Portal>
-    <div class="min-h-[50%] w-[90%] rounded bg-white p-5">
+    <div
+      class="min-h-[50%] w-[90%] rounded bg-white p-5 dark:bg-slate-950 dark:text-white"
+    >
       <button on:click={() => (showPortal = false)}>Chiudi</button>
 
       <div class="mt-5 flex flex-col gap-2">

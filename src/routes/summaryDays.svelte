@@ -1,77 +1,85 @@
 <script lang="ts">
-  import { format, getMonth } from 'date-fns';
-  import { calcolaOre, calculateEarningDat } from '../lib/helper';
-  import type { workedDay } from '../types';
-  import { DB } from '$lib/database';
+  import { format, getMonth } from 'date-fns'
+  import {
+    calculateTotalHours,
+    calculateDailyEarnings
+  } from '$lib/utils/timeTrackingUtils'
+  import type { WorkedDay } from '../types'
+  import { DB } from '$lib/database'
 
-  let workedDays: workedDay[] = [];
+  let workedDays: WorkedDay[] = []
   DB._workedDays.subscribe(async () => {
-    workedDays = (await DB.getWorkedDays()) ?? [];
-    workedDays.sort((a, b) => b.giorno.getTime() - a.giorno.getTime());
-  });
+    workedDays = (await DB.getWorkedDays()) ?? []
+    workedDays.sort((a, b) => b.date.getTime() - a.date.getTime())
+  })
 
-  let editandoIndex = -1;
-  let editDate = -1;
-  let giornoPerFasce = -1;
+  let editandoIndex = -1
+  let editDate = -1
+  let giornoPerFasce = -1
 
   function modificaFasciaOraria(index: number, giorno: number) {
-    editandoIndex = index;
-    giornoPerFasce = giorno;
+    editandoIndex = index
+    giornoPerFasce = giorno
   }
 
   function modificaData(index: number) {
-    editDate = index;
+    editDate = index
   }
 
-  async function deleteWorkedDay(workedDay: workedDay) {
-    await DB.deleteWorkedDay(workedDay);
-    workedDays = (await DB.getWorkedDays()) ?? [];
+  async function deleteWorkedDay(workedDay: WorkedDay) {
+    await DB.deleteWorkedDay(workedDay)
+    workedDays = (await DB.getWorkedDays()) ?? []
   }
 
-  async function salvaModifiche(giorno: workedDay) {
-    if (typeof giorno.giorno === 'string') giorno.giorno = new Date(giorno.giorno);
+  async function salvaModifiche(giorno: WorkedDay) {
+    if (typeof giorno.date === 'string') giorno.date = new Date(giorno.date)
 
-    DB.addWorkedDay(giorno);
+    DB.addWorkedDay(giorno)
 
     // Logica per salvare le modifiche...
-    editandoIndex = -1;
-    editDate = -1;
-    giornoPerFasce = -1;
+    editandoIndex = -1
+    editDate = -1
+    giornoPerFasce = -1
   }
 </script>
 
 <div class="">
   <p>se devi modificare le fasce orarie o la data schiacciaci sopra!</p>
   {#each workedDays as giorno, idx}
-    {#if !workedDays[idx - 1] || getMonth(workedDays[idx - 1].giorno) != getMonth(workedDays[idx].giorno)}
+    {#if !workedDays[idx - 1] || getMonth(workedDays[idx - 1].date) != getMonth(workedDays[idx].date)}
       <div class="mb-2 mt-6 p-2">
-        <span class="text-xl font-medium">{format(giorno.giorno, 'MMMM yy')}</span>
+        <span class="text-xl font-medium">{format(giorno.date, 'MMMM yy')}</span
+        >
         <hr />
       </div>
     {/if}
 
-    <div class="mb-4 flex bg-white p-4 shadow-md">
+    <div
+      class="mb-4 flex bg-white p-4 shadow-md dark:border dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+    >
       <div class="">
         <div class="flex items-center justify-between rounded-lg">
           <div>
             {#if idx !== editDate}
               <span
-                class="block text-sm font-medium text-gray-700"
+                class="block text-sm font-medium text-gray-700 dark:text-white"
                 on:click={() => modificaData(idx)}
                 role="button"
                 tabindex="0"
                 aria-pressed="true"
                 on:click={() => modificaData(idx)}
-                on:keypress={() => {}}>{format(giorno.giorno, 'iiii d/M/y')}</span
+                on:keypress={() => {}}>{format(giorno.date, 'iiii d/M/y')}</span
               >
             {:else}
               <div class="mb-4">
-                <label for="giorno" class="mb-2 block text-sm font-bold text-gray-700"
+                <label
+                  for="giorno"
+                  class="mb-2 block text-sm font-bold text-gray-700"
                   >Giorno:</label
                 >
                 <input
                   type="date"
-                  bind:value={giorno.giorno}
+                  bind:value={giorno.date}
                   id="giorno"
                   class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 />
@@ -84,55 +92,57 @@
               </button>
             {/if}
 
-            <span class="block text-sm font-light text-gray-500"
-              >ore lavorate: {calcolaOre(giorno.fasce_orarie)}</span
+            <span
+              class="block text-sm font-light text-gray-500 dark:text-gray-300"
+              >ore lavorate: {calculateTotalHours(giorno.timeSlots)}</span
             >
             <span
-              class="block text-sm font-light text-gray-500"
+              class="block text-sm font-light text-gray-500 dark:text-gray-300"
               on:click={() => {
-                giorno.viaggio = !giorno.viaggio;
-                salvaModifiche(giorno);
+                giorno.travel = !giorno.travel
+                salvaModifiche(giorno)
               }}
-              on:keypress={() => (giorno.viaggio = !giorno.viaggio)}
+              on:keypress={() => (giorno.travel = !giorno.travel)}
               role="button"
               tabindex="0"
-              aria-pressed={giorno.viaggio ? 'true' : 'false'}
-              >viaggio: {giorno.viaggio ? 'si' : 'no'}</span
+              aria-pressed={giorno.travel ? 'true' : 'false'}
+              >viaggio: {giorno.travel ? 'si' : 'no'}</span
             >
 
             <span
-              class="block text-sm font-light text-gray-500"
+              class="block text-sm font-light text-gray-500 dark:text-gray-300"
               on:click={() => {
-                giorno.yourCar = !giorno.yourCar;
-                salvaModifiche(giorno);
+                giorno.carUsage = !giorno.carUsage
+                salvaModifiche(giorno)
               }}
-              on:keypress={() => (giorno.yourCar = !giorno.yourCar)}
+              on:keypress={() => (giorno.carUsage = !giorno.carUsage)}
               role="button"
               tabindex="0"
-              aria-pressed={giorno.yourCar ? 'true' : 'false'}
-              >Con la tua macchina: {giorno.yourCar ? 'si' : 'no'}</span
+              aria-pressed={giorno.carUsage ? 'true' : 'false'}
+              >Con la tua macchina: {giorno.carUsage ? 'si' : 'no'}</span
             >
           </div>
         </div>
 
-        {#each giorno.fasce_orarie as fascia, index}
+        {#each giorno.timeSlots as fascia, index}
           <div class="flex items-center justify-between">
             {#if editandoIndex !== index || giornoPerFasce !== idx}
               <button on:click={() => modificaFasciaOraria(index, idx)}>
-                {fascia.inizio} - {fascia.fine}
+                {fascia.start} - {fascia.end}
               </button>
             {:else}
               <!-- Visualizza come input per la modifica -->
               <div class="block gap-2">
                 <input
                   type="time"
-                  class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
-                  bind:value={fascia.inizio}
+                  class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none
+                  "
+                  bind:value={fascia.start}
                 />
                 <input
                   type="time"
                   class="focus:shadow-outline rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
-                  bind:value={fascia.fine}
+                  bind:value={fascia.end}
                 />
                 <button
                   class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
@@ -143,8 +153,8 @@
                 <button
                   class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
                   on:click={() => {
-                    giorno.fasce_orarie.splice(index);
-                    salvaModifiche(giorno);
+                    giorno.timeSlots.splice(index)
+                    salvaModifiche(giorno)
                   }}
                 >
                   Elimina
@@ -164,17 +174,17 @@
 
       <div class="ml-auto flex items-stretch text-right">
         <div class="flex flex-col text-green-500">
-          <span>Paga base: € {calcolaOre(giorno.fasce_orarie) * 10}</span>
-          {#if giorno.viaggio}
+          <span>Paga base: € {calculateTotalHours(giorno.timeSlots) * 10}</span>
+          {#if giorno.travel}
             <span>+ viaggio: € 20</span>
           {/if}
-          {#if giorno.yourCar}
+          {#if giorno.carUsage}
             <span>+ macchina: € 40</span>
           {/if}
           <div class="mt-auto text-xl font-bold">
             <span>Totale</span>
             <span>
-              € {calculateEarningDat(giorno)}
+              € {calculateDailyEarnings(giorno)}
             </span>
           </div>
         </div>

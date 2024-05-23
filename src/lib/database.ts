@@ -1,214 +1,289 @@
-import { writable } from 'svelte/store';
-import { openDB, type IDBPDatabase } from 'idb';
-import type { MyDB, fascia_oraria, workedDay, PaymentHistory } from '../types';
-import { ErrorResponse, SuccessResponse } from './logger';
-import { addDays, differenceInHours, parse, format } from 'date-fns';
-import { calcolaOre } from './helper';
+import { writable } from 'svelte/store'
+import { openDB, type IDBPDatabase } from 'idb'
+import type { MyDB, TimeSlot, WorkedDay, PaymentHistory } from '../types'
+import { ErrorResponse, SuccessResponse } from './logger'
+import { addDays, differenceInHours, parse, format } from 'date-fns'
+import { calculateTotalHours } from '$lib/utils/timeTrackingUtils'
 
 class DatabaseManager {
-  _workedDays = writable<workedDay[]>([]);
-  private dbPromise!: Promise<IDBPDatabase<MyDB>>;
+  _workedDays = writable<WorkedDay[]>([])
+  dbPromise!: Promise<IDBPDatabase<MyDB>>
 
   constructor() {}
 
   async startDatabase() {
-    this.dbPromise = this.initializeDB();
+    this.dbPromise = this.initializeDB()
   }
 
-  async addWorkedDay(workedDay: workedDay) {
-    const db = await this.dbPromise;
+  async addWorkedDay(workedDay: WorkedDay) {
+    const db = await this.dbPromise
 
     if (!db) {
-      new ErrorResponse('No database loaded you should call startDatabase() first');
-      return;
+      new ErrorResponse(
+        'No database loaded. You should call startDatabase() first.'
+      )
+      return
     }
     try {
-      const tx = db.transaction('giorni_lavorati', 'readwrite');
-      const store = tx.objectStore('giorni_lavorati');
-      const key = format(workedDay.giorno, 'yyyy-MM-dd');
-      await store.put(workedDay, key);
-      new SuccessResponse(`Successfully added ${workedDay} with key ${key}`);
-      await tx.done;
+      const tx = db.transaction('workedDays', 'readwrite')
+      const store = tx.objectStore('workedDays')
+      const key = format(workedDay.date, 'yyyy-MM-dd')
+      await store.put(workedDay, key)
+      new SuccessResponse(`Successfully added ${workedDay} with key ${key}`)
+      await tx.done
       this._workedDays.update((val) => {
-        val.push(workedDay);
-        return val;
-      });
+        val.push(workedDay)
+        return val
+      })
     } catch (error) {
-      new ErrorResponse(error);
+      new ErrorResponse(error)
     }
   }
 
   async getWorkedDays(asc?: boolean) {
-    const DB = await this.dbPromise;
-    if (!DB) {
-      return;
+    const db = await this.dbPromise
+    if (!db) {
+      return
     }
-    const workedDay = await DB.getAll('giorni_lavorati');
+    const workedDays = await db.getAll('workedDays')
+    // console.log(workedDays)
+    if (!workedDays) return []
 
-    const sortedResult = workedDay.sort((a, b) =>
-      asc ? a.giorno.getTime() - b.giorno.getTime() : b.giorno.getTime() - a.giorno.getTime()
-    );
+    const sortedResult = workedDays.sort((a, b) =>
+      asc
+        ? a.date.getTime() - b.date.getTime()
+        : b.date.getTime() - a.date.getTime()
+    )
 
-    return sortedResult;
+    return sortedResult
   }
 
   getBaseWage() {
-    return 10;
+    return 10
   }
 
   async getHoursWorkedMonth(month: Date): Promise<number> {
-    const db = await this.dbPromise;
-    const tx = db.transaction('giorni_lavorati', 'readonly');
-    const store = tx.objectStore('giorni_lavorati');
-    const index = store.index('giorno');
+    const db = await this.dbPromise
+    const tx = db.transaction('workedDays', 'readonly')
+    const store = tx.objectStore('workedDays')
+    const index = store.index('date')
 
-    // Get first and last day
-    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-    const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
+    // Get first and last day of the month
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1)
+    const lastDayOfMonth = new Date(
+      month.getFullYear(),
+      month.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    )
 
-    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
+    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth)
 
-    let totalWorked = 0;
-    const allDaysWorked = await index.getAll(range);
+    let totalWorked = 0
+    const allDaysWorked = await index.getAll(range)
+    console.log(allDaysWorked)
+
     for (const day of allDaysWorked) {
-      totalWorked += calcolaOre(day.fasce_orarie);
+      totalWorked += calculateTotalHours(day.timeSlots)
     }
-    return totalWorked;
+    return totalWorked
   }
 
-  async deleteWorkedDay(workedDay: workedDay) {
-    const db = await this.dbPromise;
-    const tx = db.transaction('giorni_lavorati', 'readwrite');
-    const store = tx.objectStore('giorni_lavorati');
-    await store.delete(format(workedDay.giorno, 'yyyy-MM-dd'));
-    await tx.done;
-    // this.workedDays.update(workedDay);
+  async deleteWorkedDay(workedDay: WorkedDay) {
+    const db = await this.dbPromise
+    const tx = db.transaction('workedDays', 'readwrite')
+    const store = tx.objectStore('workedDays')
+    await store.delete(format(workedDay.date, 'yyyy-MM-dd'))
+    await tx.done
+    // this._workedDays.update(workedDay);
   }
 
-  calculateTimeSlot(timeSlot: fascia_oraria): number {
-    const startDate = new Date();
-    const startTime = parse(timeSlot.inizio, 'HH:mm', startDate);
-    const endTime = parse(timeSlot.fine, 'HH:mm', startDate);
+  calculateTimeSlot(timeSlot: TimeSlot): number {
+    const startDate = new Date()
+    const startTime = parse(timeSlot.start, 'HH:mm', startDate)
+    const endTime = parse(timeSlot.end, 'HH:mm', startDate)
 
-    const hoursWorked = differenceInHours(endTime, startTime);
+    const hoursWorked = differenceInHours(endTime, startTime)
     if (hoursWorked < 0) {
-      const endTime = parse(timeSlot.fine, 'HH:mm', addDays(startDate, 1));
-      return differenceInHours(endTime, startTime);
+      const newEndTime = parse(timeSlot.end, 'HH:mm', addDays(startDate, 1))
+      return differenceInHours(newEndTime, startTime)
     }
-    return hoursWorked;
+    return hoursWorked
   }
 
-  async getWorkWithTravelOfMouth(month: Date) {
-    const db = await this.dbPromise;
-    const tx = db.transaction('giorni_lavorati', 'readonly');
-    const store = tx.objectStore('giorni_lavorati');
-    const index = store.index('giorno');
+  async getWorkWithTravelOfMonth(month: Date) {
+    const db = await this.dbPromise
+    const tx = db.transaction('workedDays', 'readonly')
+    const store = tx.objectStore('workedDays')
+    const index = store.index('date')
 
-    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-    const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1)
+    const lastDayOfMonth = new Date(
+      month.getFullYear(),
+      month.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    )
 
-    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
+    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth)
 
-    let totalTravel = 0;
-    const allDaysWorked = await index.getAll(range);
+    let totalTravel = 0
+    const allDaysWorked = await index.getAll(range)
     for (const day of allDaysWorked) {
-      totalTravel += day.viaggio ? 1 : 0;
+      totalTravel += day.travel ? 1 : 0
     }
-    return totalTravel;
+    return totalTravel
   }
 
-  async getYourCarTravel(month: Date) {
-    const db = await this.dbPromise;
-    const tx = db.transaction('giorni_lavorati', 'readonly');
-    const store = tx.objectStore('giorni_lavorati');
-    const index = store.index('giorno');
+  async getCarUsageOfMonth(month: Date) {
+    const db = await this.dbPromise
+    const tx = db.transaction('workedDays', 'readonly')
+    const store = tx.objectStore('workedDays')
+    const index = store.index('date')
 
-    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-    const lastDayOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999);
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1)
+    const lastDayOfMonth = new Date(
+      month.getFullYear(),
+      month.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    )
 
-    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth);
+    const range = IDBKeyRange.bound(firstDayOfMonth, lastDayOfMonth)
 
-    let totalTravel = 0;
-    const allDaysWorked = await index.getAll(range);
+    let totalCarUsage = 0
+    const allDaysWorked = await index.getAll(range)
     for (const day of allDaysWorked) {
-      totalTravel += day.yourCar ? 40 : 0;
+      totalCarUsage += day.carUsage ? 40 : 0
     }
-    return totalTravel;
+    return totalCarUsage
   }
 
   async getTotalCompensationOfMouth(month: Date) {
-    const hourlyWage = DB.getBaseWage();
-    const totalHoursWorked = await DB.getHoursWorkedMonth(month);
-    const travelTotal = await DB.getWorkWithTravelOfMouth(month);
-    const yourCar = await DB.getYourCarTravel(month);
-    return totalHoursWorked * hourlyWage + travelTotal * 20 + yourCar;
+    const hourlyWage = this.getBaseWage()
+    const totalHoursWorked = await this.getHoursWorkedMonth(month)
+    const travelTotal = await this.getWorkWithTravelOfMonth(month)
+    const carUsage = await this.getCarUsageOfMonth(month)
+    return totalHoursWorked * hourlyWage + travelTotal * 20 + carUsage
   }
 
   async getPaymentHistory() {
-    const db = await this.dbPromise;
-    const tx = db.transaction('MonthlyPayments', 'readonly');
-    const store = tx.objectStore('MonthlyPayments');
-    return store.getAll();
+    const db = await this.dbPromise
+    const tx = db.transaction('monthlyPayments', 'readonly')
+    const store = tx.objectStore('monthlyPayments')
+    return store.getAll()
   }
 
   async getSinglePaymentHistory(id: string) {
-    const db = await this.dbPromise;
-    const tx = db.transaction('MonthlyPayments', 'readonly');
-    const store = tx.objectStore('MonthlyPayments');
-    return store.get(id);
+    const db = await this.dbPromise
+    const tx = db.transaction('monthlyPayments', 'readonly')
+    const store = tx.objectStore('monthlyPayments')
+    return store.get(id)
   }
 
   async updatePaymentHistory(key: string, val: number) {
-    const db = await this.dbPromise;
-    const tx = db.transaction('MonthlyPayments', 'readwrite');
-    const store = tx.objectStore('MonthlyPayments');
-    if (!store) throw Error('errore nel db');
+    const db = await this.dbPromise
+    const tx = db.transaction('monthlyPayments', 'readwrite')
+    const store = tx.objectStore('monthlyPayments')
+    if (!store) throw Error('Error in the database')
     const paymentRecord: PaymentHistory = {
-      month_year: key,
+      monthYear: key,
       payment: val
-    };
-    return await store.put(paymentRecord);
+    }
+    return await store.put(paymentRecord)
   }
 
   private async initializeDB(): Promise<IDBPDatabase<MyDB>> {
-    return openDB<MyDB>('MyDB', 3, {
-      upgrade(db, old, newVersion, transition) {
-        if (!db.objectStoreNames.contains('giorni_lavorati')) {
-          const giorniLavoratiStore = db.createObjectStore('giorni_lavorati');
-          giorniLavoratiStore.createIndex('giorno', 'giorno');
+    return openDB<MyDB>('MyDB', 4, {
+      upgrade(db, oldVersion, newVersion, transaction) {
+        console.log('qui')
+
+        if (!db.objectStoreNames.contains('workedDays')) {
+          const workedDaysStore = db.createObjectStore('workedDays')
+          workedDaysStore.createIndex('date', 'date')
         }
-        if (!db.objectStoreNames.contains('paga_base')) {
-          db.createObjectStore('paga_base');
-          transition.objectStore('paga_base').put(10, 'main');
+        if (!db.objectStoreNames.contains('baseWage')) {
+          db.createObjectStore('baseWage')
+          transaction.objectStore('baseWage').put(10, 'main')
         }
-        if (!db.objectStoreNames.contains('viaggio')) {
-          db.createObjectStore('viaggio');
-          transition.objectStore('viaggio').put(2, 'main');
+        if (!db.objectStoreNames.contains('travel')) {
+          db.createObjectStore('travel')
+          transaction.objectStore('travel').put(2, 'main')
         }
-        if (!db.objectStoreNames.contains('MonthlyPayments')) {
-          const monthlyPaymentsStore = db.createObjectStore('MonthlyPayments', {
-            keyPath: 'month_year'
-          });
-          monthlyPaymentsStore.createIndex('month_year', ['month', 'year'], { unique: false });
+        if (!db.objectStoreNames.contains('monthlyPayments')) {
+          const monthlyPaymentsStore = db.createObjectStore('monthlyPayments', {
+            keyPath: 'monthYear'
+          })
+          monthlyPaymentsStore.createIndex('monthYear', 'monthYear', {
+            unique: false
+          })
         }
 
-        if (old < 2) {
-          const giorniLavoratiStore = transition.objectStore('giorni_lavorati');
+        // Check if the old object store exists before trying to access it
+        if (db.objectStoreNames.contains('giorni_lavorati')) {
+          const giorniLavoratiStore = transaction.objectStore('giorni_lavorati')
+          console.log('qui')
 
-          giorniLavoratiStore.openCursor().then((cursor) => {
-            if (!cursor) return;
-            do {
-              const record = cursor.value;
-              record.viaggio = true;
-              cursor.update(record);
-            } while (cursor.continue());
-          });
+          giorniLavoratiStore
+            .openCursor()
+            .then(function processCursor(cursor) {
+              if (!cursor) {
+                console.log('No more entries!')
+                return
+              }
+
+              const record = cursor.value
+              const newTimeSlots: TimeSlot[] = record.fasce_orarie.map(
+                (element: any) => ({
+                  start: element.inizio,
+                  end: element.fine
+                })
+              )
+
+              const newRecord: WorkedDay = {
+                date: record.giorno,
+                timeSlots: newTimeSlots,
+                travel: record.viaggio,
+                carUsage: record.yourCar
+              }
+
+              const key = format(newRecord.date, 'yyyy-MM-dd')
+              const newStore = transaction.objectStore('workedDays')
+
+              newStore
+                .put(newRecord, key)
+                .then(() => {
+                  cursor
+                    .delete()
+                    .then(() => {
+                      cursor.continue().then(processCursor)
+                    })
+                    .catch((error) => {
+                      console.error('Error deleting old record:', error)
+                    })
+                })
+                .catch((error) => {
+                  console.error('Error adding new record:', error)
+                })
+            })
+            .catch((error) => {
+              console.error('Error opening cursor:', error)
+            })
         }
       }
-    });
+    })
   }
 }
 
-const DB = new DatabaseManager();
+const DB = new DatabaseManager()
 
-export { DB, type DatabaseManager };
+export { DB, type DatabaseManager }

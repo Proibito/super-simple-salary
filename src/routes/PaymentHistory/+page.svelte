@@ -9,7 +9,7 @@
   async function calcolaGuadagniMensili() {
     guadagniMensili = new Map<string, number>();
     for (const wage of (await DB.getWorkedDays()) ?? []) {
-      const data = format(wage.giorno, 'yyyy-MM');
+      const data = format(wage.date, 'yyyy-MM');
       if (guadagniMensili.get(data)) continue;
       const payment = await DB.getSinglePaymentHistory(data);
       guadagniMensili.set(data, payment?.payment || 0);
@@ -21,10 +21,10 @@
   async function totalMonthWage() {
     totaleWageMap = new Map<string, { totalWage: number }>();
     for (const wage of (await DB.getWorkedDays()) ?? []) {
-      const data = format(wage.giorno, 'yyyy-MM');
+      const data = format(wage.date, 'yyyy-MM');
       if (totaleWageMap.get(data)) continue;
       totaleWageMap.set(data, {
-        totalWage: await DB.getTotalCompensationOfMouth(wage.giorno)
+        totalWage: await DB.getTotalCompensationOfMouth(wage.date)
       });
     }
 

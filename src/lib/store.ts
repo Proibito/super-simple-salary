@@ -1,4 +1,4 @@
-import type { workedDay } from '../types';
+import type { WorkedDay } from '../types';
 import { writable } from 'svelte/store';
 
-export const daysOBS = writable<workedDay[]>([]);
+export const daysOBS = writable<WorkedDay[]>([]);

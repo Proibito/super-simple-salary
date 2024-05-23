@@ -8,10 +8,10 @@
   async function calcolaGuadagniMensili() {
     guadagniMensili = new Map<string, { totalWage: number }>();
     for (const wage of (await DB.getWorkedDays()) ?? []) {
-      const data = format(wage.giorno, 'yyyy-MM');
+      const data = format(wage.date, 'yyyy-MM');
       if (guadagniMensili.get(data)) continue;
       guadagniMensili.set(data, {
-        totalWage: await DB.getTotalCompensationOfMouth(wage.giorno)
+        totalWage: await DB.getTotalCompensationOfMouth(wage.date)
       });
     }
     console.log(guadagniMensili);
