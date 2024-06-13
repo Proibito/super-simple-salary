@@ -37,3 +37,9 @@ export interface MyDB extends DBSchema {
     indexes: { monthYear: string }
   }
 }
+
+export interface DetailedWage {
+  totalHours: number,
+  totalTravel: number
+  dailyAllowance: number
+}

@@ -1,5 +1,5 @@
 import { differenceInMinutes, getMonth, setHours, setMinutes } from 'date-fns'
-import type { TimeSlot, WorkedDay } from '../../types'
+import type { DetailedWage, TimeSlot, WorkedDay } from '../../types'
 
 /**
  * Calculates the total number of hours worked in a day.
@@ -109,11 +109,7 @@ export function calculateTotalCompensation(days: WorkedDay[]): number {
  * @param days - Array of worked days.
  * @returns Object containing total hours, total travel, and daily allowance.
  */
-export function calculateDetailedCompensation(days: WorkedDay[]): {
-  totalHours: number
-  totalTravel: number
-  dailyAllowance: number
-} {
+export function calculateDetailedCompensation(days: WorkedDay[]): DetailedWage {
   let totalWorked = 0
   let travelTotal = 0
   let carAllowance = 0
