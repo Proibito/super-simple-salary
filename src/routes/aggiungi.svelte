@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { getContext } from 'svelte'
   // import { daysOBS } from '../lib/store';
   import { format } from 'date-fns'
@@ -8,10 +10,10 @@
   const { toggleAggiungi } = getContext<{ toggleAggiungi: () => void }>(
     'vision'
   )
-  let giorno = format(new Date(), 'yyyy-MM-dd')
-  let travel = false
-  let yourCar = false
-  let fasceOrarie: TimeSlot[] = [{ start: '', end: '' }]
+  let giorno = $state(format(new Date(), 'yyyy-MM-dd'))
+  let travel = $state(false)
+  let yourCar = $state(false)
+  let fasceOrarie: TimeSlot[] = $state([{ start: '', end: '' }])
 
   // Funzione per aggiungere una nuova fascia oraria
   function aggiungiFasciaOraria() {
@@ -42,12 +44,12 @@
   class="fixed z-50 flex h-full w-full items-center overflow-y-auto bg-white"
 >
   <form
-    on:submit|preventDefault={salvaGiornoLavorato}
+    onsubmit={preventDefault(salvaGiornoLavorato)}
     class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-md"
   >
     <button
       class="mb-5 rounded-md border px-3 py-2 text-sm font-bold shadow-md"
-      on:click={toggleAggiungi}>chiudi</button
+      onclick={toggleAggiungi}>chiudi</button
     >
     <div class="mb-4">
       <label for="giorno" class="mb-2 block text-sm font-bold text-gray-700"
@@ -119,7 +121,7 @@
             {#if index > 0}
               <div class="flex items-end justify-center">
                 <button
-                  on:click={() => rimuoviFasciaOraria(index)}
+                  onclick={() => rimuoviFasciaOraria(index)}
                   class="focus:shadow-outline rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
                   >Rimuovi</button
                 >
@@ -130,7 +132,7 @@
 
         <div class="flex items-center justify-between">
           <button
-            on:click={() => aggiungiFasciaOraria()}
+            onclick={() => aggiungiFasciaOraria()}
             type="button"
             class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
           >

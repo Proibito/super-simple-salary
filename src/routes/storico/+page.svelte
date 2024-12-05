@@ -3,7 +3,7 @@
   import { parse, format } from 'date-fns';
   import { DB } from '$lib/database';
 
-  let guadagniMensili: Map<string, { totalWage: number }> = new Map();
+  let guadagniMensili: Map<string, { totalWage: number }> = $state(new Map());
 
   async function calcolaGuadagniMensili() {
     guadagniMensili = new Map<string, { totalWage: number }>();

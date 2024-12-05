@@ -9,11 +9,16 @@
   import { it } from 'date-fns/locale'
   import Portal from './Portal.svelte'
   import Aggiungi from './aggiungi.svelte'
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  let visibleAdd = false
-  $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : ''
-  let loaded: boolean = false
-  let showPortal: boolean = false
+  let { children }: Props = $props();
+
+  let visibleAdd = $state(false)
+  let webManifest = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '')
+  let loaded: boolean = $state(false)
+  let showPortal: boolean = $state(false)
 
   type menuItem = { label: string; link: string }
   const links: menuItem[] = [
@@ -61,20 +66,24 @@
     slotTrail="place-content-end"
     class="dark:bg-slate-950 dark:text-white"
   >
-    <svelte:fragment slot="lead">
-      <button on:click={() => (showPortal = !showPortal)}>
-        <IconAccessibility />
-      </button>
-    </svelte:fragment>
+    {#snippet lead()}
+      
+        <button onclick={() => (showPortal = !showPortal)}>
+          <IconAccessibility />
+        </button>
+      
+      {/snippet}
     Stipendio
-    <svelte:fragment slot="trail">
-      <button class="btn-suc btn" on:click={() => (visibleAdd = true)}
-        >Aggiungi</button
-      >
-    </svelte:fragment>
+    {#snippet trail()}
+      
+        <button class="btn-suc btn" onclick={() => (visibleAdd = true)}
+          >Aggiungi</button
+        >
+      
+      {/snippet}
   </AppBar>
   <main class="m-auto px-2 lg:w-1/2">
-    <slot />
+    {@render children?.()}
   </main>
 {/if}
 
@@ -88,7 +97,7 @@
     <div
       class="min-h-[50%] w-[90%] rounded bg-white p-5 dark:bg-slate-950 dark:text-white"
     >
-      <button on:click={() => (showPortal = false)}>Chiudi</button>
+      <button onclick={() => (showPortal = false)}>Chiudi</button>
 
       <div class="mt-5 flex flex-col gap-2">
         <hr />
@@ -96,7 +105,7 @@
           <a
             href={`./${single.link == 'home' ? '' : single.link}`}
             class="font-bold"
-            on:click={() => (showPortal = false)}>{single.label}</a
+            onclick={() => (showPortal = false)}>{single.label}</a
           >
           <hr />
         {/each}

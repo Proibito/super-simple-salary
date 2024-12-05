@@ -3,8 +3,8 @@
   import { format, parse } from 'date-fns';
   import { onMount } from 'svelte';
 
-  let guadagniMensili: Map<string, number> = new Map();
-  let totaleWageMap: Map<string, { totalWage: number }> = new Map();
+  let guadagniMensili: Map<string, number> = $state(new Map());
+  let totaleWageMap: Map<string, { totalWage: number }> = $state(new Map());
 
   async function calcolaGuadagniMensili() {
     guadagniMensili = new Map<string, number>();
@@ -63,7 +63,7 @@
           <span>€</span>
           <input
             type="number"
-            on:keyup={(event) => updateWage(event, k)}
+            onkeyup={(event) => updateWage(event, k)}
             value={v}
             class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           />

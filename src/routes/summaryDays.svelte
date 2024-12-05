@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { handlers } from 'svelte/legacy';
+
   import { format, getMonth } from 'date-fns'
   import {
     calculateTotalHours,
@@ -7,15 +9,15 @@
   import type { WorkedDay } from '../types'
   import { DB } from '$lib/database'
 
-  let workedDays: WorkedDay[] = []
+  let workedDays: WorkedDay[] = $state([])
   DB._workedDays.subscribe(async () => {
     workedDays = (await DB.getWorkedDays()) ?? []
     workedDays.sort((a, b) => b.date.getTime() - a.date.getTime())
   })
 
-  let editandoIndex = -1
-  let editDate = -1
-  let giornoPerFasce = -1
+  let editandoIndex = $state(-1)
+  let editDate = $state(-1)
+  let giornoPerFasce = $state(-1)
 
   function modificaFasciaOraria(index: number, giorno: number) {
     editandoIndex = index
@@ -63,12 +65,11 @@
             {#if idx !== editDate}
               <span
                 class="block text-sm font-medium text-gray-700 dark:text-white"
-                on:click={() => modificaData(idx)}
+                onclick={handlers(() => modificaData(idx), () => modificaData(idx))}
                 role="button"
                 tabindex="0"
                 aria-pressed="true"
-                on:click={() => modificaData(idx)}
-                on:keypress={() => {}}>{format(giorno.date, 'iiii d/M/y')}</span
+                onkeypress={() => {}}>{format(giorno.date, 'iiii d/M/y')}</span
               >
             {:else}
               <div class="mb-4">
@@ -86,7 +87,7 @@
               </div>
               <button
                 class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
-                on:click={() => salvaModifiche(giorno)}
+                onclick={() => salvaModifiche(giorno)}
               >
                 Salva
               </button>
@@ -98,11 +99,11 @@
             >
             <span
               class="block text-sm font-light text-gray-500 dark:text-gray-300"
-              on:click={() => {
+              onclick={() => {
                 giorno.travel = !giorno.travel
                 salvaModifiche(giorno)
               }}
-              on:keypress={() => (giorno.travel = !giorno.travel)}
+              onkeypress={() => (giorno.travel = !giorno.travel)}
               role="button"
               tabindex="0"
               aria-pressed={giorno.travel ? 'true' : 'false'}
@@ -111,11 +112,11 @@
 
             <span
               class="block text-sm font-light text-gray-500 dark:text-gray-300"
-              on:click={() => {
+              onclick={() => {
                 giorno.carUsage = !giorno.carUsage
                 salvaModifiche(giorno)
               }}
-              on:keypress={() => (giorno.carUsage = !giorno.carUsage)}
+              onkeypress={() => (giorno.carUsage = !giorno.carUsage)}
               role="button"
               tabindex="0"
               aria-pressed={giorno.carUsage ? 'true' : 'false'}
@@ -127,7 +128,7 @@
         {#each giorno.timeSlots as fascia, index}
           <div class="flex items-center justify-between">
             {#if editandoIndex !== index || giornoPerFasce !== idx}
-              <button on:click={() => modificaFasciaOraria(index, idx)}>
+              <button onclick={() => modificaFasciaOraria(index, idx)}>
                 {fascia.start} - {fascia.end}
               </button>
             {:else}
@@ -146,13 +147,13 @@
                 />
                 <button
                   class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
-                  on:click={() => salvaModifiche(giorno)}
+                  onclick={() => salvaModifiche(giorno)}
                 >
                   Salva
                 </button>
                 <button
                   class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
-                  on:click={() => {
+                  onclick={() => {
                     giorno.timeSlots.splice(index)
                     salvaModifiche(giorno)
                   }}
@@ -165,7 +166,7 @@
         {/each}
 
         <button
-          on:click={() => deleteWorkedDay(giorno)}
+          onclick={() => deleteWorkedDay(giorno)}
           class="focus:shadow-outline mt-2 rounded bg-red-500 px-5 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
         >
           Elimina

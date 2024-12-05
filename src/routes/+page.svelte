@@ -4,10 +4,10 @@
   import { format } from 'date-fns';
   import { DB } from '$lib/database';
 
-  let totalWageMonth = 0;
+  let totalWageMonth = $state(0);
 
   onMount(async () => {
-    // update();
+    update();
   });
 
   async function update() {

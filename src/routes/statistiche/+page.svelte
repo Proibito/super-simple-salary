@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { daysOBS } from '$lib/store'
   import { format, getMonth, getYear, subMonths, addMonths } from 'date-fns'
   import {
@@ -8,18 +10,14 @@
   } from '$lib/utils/timeTrackingUtils'
   import type { DetailedWage, WorkedDay } from '../../types'
 
-  let allDays: WorkedDay[] = []
-  let currentSelection = new Date()
-  let currentDaysDisplayed: WorkedDay[] = []
-  let detailedCompensation: DetailedWage
+  let allDays: WorkedDay[] = $state([])
+  let currentSelection = $state(new Date())
+  let currentDaysDisplayed: WorkedDay[] = $state([])
+  let detailedCompensation: DetailedWage = $state()
 
-  let daysList: HTMLUListElement
-  let totalSpan: Element
+  let daysList: HTMLUListElement = $state()
+  let totalSpan: Element = $state()
 
-  $: daysOBS.subscribe((data) => {
-    allDays = data
-    currentDaysDisplayed = getDays(currentSelection)
-  })
 
   function getDays(date: Date): WorkedDay[] {
     const ret = allDays.filter(
@@ -71,6 +69,12 @@
         console.error('Errore durante la copia:', error)
       })
   }
+  run(() => {
+    daysOBS.subscribe((data) => {
+      allDays = data
+      currentDaysDisplayed = getDays(currentSelection)
+    })
+  });
 </script>
 
 <div class="p-10">
@@ -78,7 +82,7 @@
   <div class="flex w-full px-16">
     <button
       class="bold cursor-pointer font-bold"
-      on:click={() => {
+      onclick={() => {
         currentSelection = subMonths(currentSelection, 1)
       }}>&lt;</button
     >
@@ -87,7 +91,7 @@
     >
     <button
       class="bold cursor-pointer font-bold"
-      on:click={() => {
+      onclick={() => {
         currentSelection = addMonths(currentSelection, 1)
       }}>&gt;</button
     >
@@ -96,7 +100,7 @@
   <button
     id="copy-button"
     class="rounded-md bg-green-700 px-3 py-2 text-sm font-bold text-white shadow-md"
-    on:click={copyToClipboard}
+    onclick={copyToClipboard}
   >
     copia
   </button>
