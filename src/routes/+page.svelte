@@ -7,7 +7,7 @@
   let totalWageMonth = 0;
 
   onMount(async () => {
-    update();
+    // update();
   });
 
   async function update() {
