@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { getContext } from 'svelte'
   // import { daysOBS } from '../lib/store';
   import { format } from 'date-fns'
@@ -44,7 +42,7 @@
   class="fixed z-50 flex h-full w-full items-center overflow-y-auto bg-white"
 >
   <form
-    onsubmit={preventDefault(salvaGiornoLavorato)}
+    onsubmit={salvaGiornoLavorato}
     class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-md"
   >
     <button
@@ -99,7 +97,6 @@
                 type="time"
                 bind:value={fascia.start}
                 id={`inizio-${index}`}
-                step="900"
                 class="focus:shadow-outline block w-full rounded border py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 required
               />
@@ -114,7 +111,6 @@
                 bind:value={fascia.end}
                 id={`fine-${index}`}
                 class="focus:shadow-outline block w-full rounded border py-2 leading-tight text-gray-700 shadow focus:outline-none"
-                step="900"
                 required
               />
             </div>

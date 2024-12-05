@@ -17,7 +17,7 @@ class DatabaseManager {
 
   async addWorkedDay(workedDay: WorkedDay) {
     const db = await this.dbPromise
-
+    workedDay.timeSlots = JSON.parse(JSON.stringify(workedDay.timeSlots))
     if (!db) {
       new ErrorResponse(
         'No database loaded. You should call startDatabase() first.'
@@ -84,7 +84,6 @@ class DatabaseManager {
 
     let totalWorked = 0
     const allDaysWorked = await index.getAll(range)
-    console.log(allDaysWorked)
 
     for (const day of allDaysWorked) {
       totalWorked += calculateTotalHours(day.timeSlots)

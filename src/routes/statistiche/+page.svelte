@@ -1,7 +1,7 @@
 <script lang="ts">
   import { run } from 'svelte/legacy';
 
-  import { daysOBS } from '$lib/store'
+  import { daysOBS } from '$lib/store.svelte'
   import { format, getMonth, getYear, subMonths, addMonths } from 'date-fns'
   import {
     calculateTotalCompensation,

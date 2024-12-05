@@ -45,6 +45,7 @@
   "type": "module",
   "dependencies": {
     "date-fns": "^4.1.0",
+    "firebase": "^11.0.2",
     "idb": "^8.0.0",
     "svelte-portal": "^2.2.1"
   }

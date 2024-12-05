@@ -1,6 +1,6 @@
 // database.ts
 import { format } from 'date-fns';
-import { daysOBS } from '$lib/store';
+import { daysOBS } from '$lib/store.svelte';
 import type { MyDB, WorkedDay } from './types';
 import { ResponseType, sendResponse } from '$lib/logger';
 import { error } from '@sveltejs/kit';
