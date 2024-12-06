@@ -46,7 +46,7 @@
 
   // Gestisce l'invio del form
   async function handleSubmit() {
-    if (!title || !date || !location || selectedEmployees.length === 0) {
+    if (!date || !location) {
       error = 'Per favore compila tutti i campi richiesti'
       return
     }
@@ -99,7 +99,6 @@
         id="title"
         bind:value={title}
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        required
       />
     </div>
 
@@ -107,7 +106,7 @@
     <div>
       <label for="date" class="block text-sm font-medium">Data</label>
       <input
-        type="datetime-local"
+        type="date"
         id="date"
         bind:value={date}
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -132,7 +131,8 @@
 
     <!-- Dipendenti -->
     <div>
-      <label class="mb-2 block text-sm font-medium">Dipendenti</label>
+      <span class="mb-2 block text-sm font-medium">Dipendenti</span>
+      <span>Puoi anche aggiungerli dopo</span>
       {#if loading}
         <p>Caricamento dipendenti...</p>
       {:else}

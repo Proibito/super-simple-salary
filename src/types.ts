@@ -54,39 +54,63 @@ export enum WorkLocations {
   MUMA = 'Muma'
 }
 
-
-export interface WorkLocation {  // Rinominato da Location a WorkLocation
-  id: string;
-  name: string;
-  active: boolean;
-}
+// export interface WorkLocation {
+//   // Rinominato da Location a WorkLocation
+//   id: string
+//   name: string
+//   active: boolean
+// }
 
 export interface TimeRange {
-  start: Timestamp;
-  end: Timestamp;
-  notes?: string;
+  start: Timestamp
+  end: Timestamp
+  notes?: string
 }
 
 export interface WorkShift {
-  id: string;
-  userId: string;
-  eventId?: string;
-  date: Timestamp;
-  locationId: string;
-  status: 'DRAFT' | 'VALIDATED' | 'COMPLETED' | 'REJECTED';
-  timeRanges: TimeRange[];
-  totalHours: number;
-  travel: boolean;
-  usePersonalCar: boolean;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  validatedBy?: string;
-  validatedAt?: Timestamp;
-  validatedHours?: number;
+  id: string
+  userId: string
+  eventId?: string
+  date: Timestamp
+  locationId: string
+  status: 'DRAFT' | 'VALIDATED' | 'COMPLETED' | 'REJECTED'
+  timeRanges: TimeRange[]
+  totalHours: number
+  travel: boolean
+  usePersonalCar: boolean
+  createdAt: Timestamp
+  updatedAt: Timestamp
+  validatedBy?: string
+  validatedAt?: Timestamp
+  validatedHours?: number
 }
 
 export interface DetailedWage {
   totalHours: number
   totalTravel: number
   dailyAllowance: number
+}
+
+export interface Event {
+  id?: string
+  title?: string
+  date: Date
+  location: WorkLocations
+  employeeIds?: string[]
+  description?: string
+  createdAt: Date
+  updatedAt?: Date
+  createdBy?: string
+  managersId?: string[]
+  WorkShifts?: string[]
+}
+
+// Tipo per la creazione di un nuovo evento
+export type CreateEventDTO = Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
+
+// Tipo per l'aggiornamento di un evento
+export type UpdateEventDTO = Partial<
+  Omit<Event, 'id' | 'createdAt' | 'createdBy'>
+> & {
+  updatedAt: Date
 }
