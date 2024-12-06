@@ -36,7 +36,7 @@ export const signUpUser = onCall(async (request) => {
 
     await getAuth().setCustomUserClaims(userRecord.uid, { role: UserRole.USER })
 
-    // Prepara i dati per Firestore
+  
     const userData: User = {
       id: userRecord.uid,
       email,

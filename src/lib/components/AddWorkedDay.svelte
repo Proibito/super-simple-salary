@@ -12,6 +12,7 @@
   import { getContext } from 'svelte'
   import { get } from 'svelte/store'
   import { WorkLocations, type WorkShift } from '../../types'
+  import { addWorkingShift, WorkShiftFactory } from '$lib/workShifts'
 
   const { toggleAggiungi } = getContext<{ toggleAggiungi: () => void }>(
     'vision'
@@ -20,7 +21,6 @@
   // Stati
   let date = $state(format(new Date(), 'yyyy-MM-dd'))
   let selectedLocationId = $state('')
-  let travel = $state(false)
   let usePersonalCar = $state(false)
   let timeSlots = $state([{ start: '', end: '', notes: '' }])
 
@@ -32,67 +32,27 @@
     timeSlots = timeSlots.filter((_, i) => i !== index)
   }
 
-  function calculateTotalHours(): number {
-    return timeSlots.reduce((total, slot) => {
-      if (!slot.start || !slot.end) return total
-      const start = new Date(`${date}T${slot.start}`)
-      const end = new Date(`${date}T${slot.end}`)
-      const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
-      return total + hours
-    }, 0)
-  }
-
   async function saveWorkShift(e: Event) {
     e.preventDefault()
     const user = get(currentUser)
     if (!user) throw Error('User not logged')
 
-    // const yearMonth = format(new Date(date), 'yyyy-MM-dd')
     const workShiftId = crypto.randomUUID()
 
-    const workShiftData: WorkShift = {
+    const workShiftData: WorkShift = WorkShiftFactory.create({
       id: workShiftId,
-      userId: user.id,
       date: Timestamp.fromDate(new Date(date)),
+      userId: user.id,
       locationId: selectedLocationId,
-      status: 'DRAFT',
+      usePersonalCar,
       timeRanges: timeSlots.map((slot) => ({
         start: Timestamp.fromDate(new Date(`${date}T${slot.start}`)),
         end: Timestamp.fromDate(new Date(`${date}T${slot.end}`)),
         notes: slot.notes
-      })),
-      totalHours: calculateTotalHours(),
-      travel: selectedLocationId == WorkLocations.BAROLO,
-      usePersonalCar,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
-    }
+      }))
+    })
 
-    try {
-      const shiftsRef = doc(
-        db,
-        `workShifts/`,
-        workShiftId
-      ) as DocumentReference<WorkShift>
-
-      const batch = writeBatch(db)
-
-      batch.set(shiftsRef, workShiftData)
-
-      // batch.set()
-      // TODO add events data
-
-      const userRef = doc(db, 'users', user.id)
-      batch.update(userRef, {
-        workShifts: arrayUnion(shiftsRef)
-      })
-
-      await batch.commit()
-      toggleAggiungi()
-    } catch (error) {
-      console.error('Errore nel salvataggio:', error)
-      alert('Errore nel salvataggio del turno')
-    }
+    await addWorkingShift(workShiftData)
   }
 </script>
 

@@ -11,11 +11,17 @@
     updateDoc
   } from 'firebase/firestore'
   import { onDestroy } from 'svelte'
-  import type { TimeRange, WorkShift } from '../../types'
+  import {
+    WorkedHoursStatus,
+    type TimeRange,
+    type WorkShift
+  } from '../../types'
+  import { deleteWorkShift } from '$lib/workShifts'
 
   let workShifts: WorkShift[] = $state([])
   let editingTimeRange = { index: -1, shiftId: '' }
   let editingDate = ''
+  let totalHours = $state(0)
 
   let userId: string | null = null
   let unsubscribeStore = currentUser.subscribe(async (user) => {
@@ -29,7 +35,11 @@
       )
 
       workShifts = workShiftsData
-        .map((doc) => doc.data() as WorkShift)
+        .map((doc) => {
+          const format = doc.data() as WorkShift
+          format.totalHours = calculateTotalHours(format.timeRanges)
+          return format
+        })
         .sort((a, b) => {
           return b.date.seconds - a.date.seconds
         })
@@ -52,22 +62,14 @@
   }
 
   function calculateDailyEarnings(workShift: WorkShift): string {
-    let total = workShift.totalHours * 10
+    let total = workShift.totalHours ? workShift.totalHours * 10 : 0
     if (workShift.travel) total += 20
     if (workShift.usePersonalCar) total += 40
     return total.toFixed(2)
   }
 
-  async function deleteWorkShift(shiftId: string) {
-    if (userId) {
-      const docRef = doc(db, 'users', userId)
-
-      await updateDoc(docRef, {
-        workShifts: arrayRemove(doc(db, 'workShifts', shiftId))
-      })
-
-      await deleteDoc(doc(db, 'workShifts', shiftId))
-    }
+  async function delWorkShift(shift: WorkShift) {
+    await deleteWorkShift(shift)
   }
 
   async function updateWorkShift(shiftId: string, updates: Partial<WorkShift>) {
@@ -183,12 +185,14 @@
           </div>
         {/each}
 
-        <button
-          onclick={() => deleteWorkShift(shift.id)}
-          class="mt-4 rounded bg-red-500 px-4 py-2 text-white"
-        >
-          Elimina
-        </button>
+        {#if shift.status != WorkedHoursStatus.VALIDATED}
+          <button
+            onclick={() => delWorkShift(shift)}
+            class="mt-4 rounded bg-red-500 px-4 py-2 text-white"
+          >
+            Elimina
+          </button>
+        {/if}
       </div>
 
       <div class="ml-auto text-right">

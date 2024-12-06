@@ -1,9 +1,28 @@
 import { writable } from 'svelte/store'
 import { openDB, type IDBPDatabase } from 'idb'
-import type { MyDB, TimeSlot, WorkedDay, PaymentHistory } from '../types'
+import {
+  type MyDB,
+  type TimeSlot,
+  type WorkedDay,
+  type PaymentHistory,
+  type WorkShift,
+  WorkLocations,
+  type TimeRange
+} from '../types'
 import { ErrorResponse, SuccessResponse } from './logger'
 import { addDays, differenceInHours, parse, format } from 'date-fns'
 import { calculateTotalHours } from '$lib/utils/timeTrackingUtils'
+import {
+  Timestamp,
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  setDoc,
+  writeBatch
+} from 'firebase/firestore'
+import { db } from './firebase.svelte'
+import { WorkShiftFactory } from './workShifts'
 
 class DatabaseManager {
   _workedDays = writable<WorkedDay[]>([])
@@ -284,5 +303,86 @@ class DatabaseManager {
 }
 
 const DB = new DatabaseManager()
+
+export async function migrateDB(userId: string) {
+  // 1. Get all worked days from IndexedDB
+  const workedDays = await DB.getWorkedDays(true)
+
+  if (!workedDays) return
+
+  // 2. Convert each worked day to the new format
+  const workShifts: WorkShift[] = workedDays.map((day: WorkedDay) => {
+    // Convert TimeSlots to TimeRanges
+    const timeRanges: TimeRange[] = day.timeSlots.map((slot: TimeSlot) => {
+      const date = new Date(day.date)
+      const [startHours, startMinutes] = slot.start.split(':')
+      const [endHours, endMinutes] = slot.end.split(':')
+
+      const startDate = new Date(date)
+      startDate.setHours(parseInt(startHours), parseInt(startMinutes), 0)
+
+      const endDate = new Date(date)
+      endDate.setHours(parseInt(endHours), parseInt(endMinutes), 0)
+
+      // Handle cases where end time is on the next day
+      if (endDate < startDate) {
+        endDate.setDate(endDate.getDate() + 1)
+      }
+
+      return {
+        start: Timestamp.fromDate(startDate),
+        end: Timestamp.fromDate(endDate)
+      }
+    })
+
+    const locationId: WorkLocations = day.travel
+      ? WorkLocations.BAROLO
+      : WorkLocations.VILLA_SASSI
+
+    const workShift: WorkShift = WorkShiftFactory.create({
+      id: crypto.randomUUID(),
+      userId,
+      date: Timestamp.fromDate(day.date),
+      locationId,
+      status: 'DRAFT',
+      timeRanges,
+      travel: day.travel,
+      usePersonalCar: day.carUsage,
+      createdAt: Timestamp.fromDate(new Date()),
+      updatedAt: Timestamp.fromDate(new Date())
+    })
+
+    return workShift
+  })
+
+  // 3. Save to Firestore
+  const userRef = doc(db, 'users', userId)
+  const batch = writeBatch(db)
+  for (const workShift of workShifts) {
+    const docRef = doc(db, 'workShifts', workShift.id)
+    batch.set(docRef, workShift)
+    batch.update(userRef, {
+      workShifts: arrayUnion(docRef)
+    })
+  }
+
+  // Wait for all documents to be added
+  try {
+    await batch.commit()
+    console.log('Migration completed successfully')
+    return {
+      success: true,
+      message: `Migrated ${workShifts.length} work shifts to Firestore`,
+      migratedShifts: workShifts.length
+    }
+  } catch (error) {
+    console.error('Error during migration:', error)
+    return {
+      success: false,
+      message: 'Error during migration',
+      error
+    }
+  }
+}
 
 export { DB, type DatabaseManager }

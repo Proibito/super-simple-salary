@@ -64,7 +64,6 @@ export enum WorkLocations {
 export interface TimeRange {
   start: Timestamp
   end: Timestamp
-  notes?: string
 }
 
 export interface WorkShift {
@@ -73,20 +72,17 @@ export interface WorkShift {
   eventId?: string
   date: Timestamp
   locationId: string
-  status: 'DRAFT' | 'VALIDATED' | 'COMPLETED' | 'REJECTED'
+  status: WorkedHoursStatus
   timeRanges: TimeRange[]
-  totalHours: number
   travel: boolean
   usePersonalCar: boolean
   createdAt: Timestamp
   updatedAt: Timestamp
   validatedBy?: string
-  validatedAt?: Timestamp
-  validatedHours?: number
+  totalHours?: number
 }
 
 export interface DetailedWage {
-  totalHours: number
   totalTravel: number
   dailyAllowance: number
 }

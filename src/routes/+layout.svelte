@@ -13,6 +13,8 @@
   import { getAuth, signOut } from 'firebase/auth'
   import Portal from '$lib/components/Portal.svelte'
   import AddWorkedDay from '$lib/components/AddWorkedDay.svelte'
+  import { migrateDB } from '$lib/database'
+  import { get } from 'svelte/store'
 
   interface Props {
     children?: import('svelte').Snippet
@@ -54,6 +56,12 @@
   }
 
   let openMenu = $state(false)
+
+  async function migrate() {
+    const user = get(currentUser)
+
+    if (user) await migrateDB(user.id)
+  }
 </script>
 
 <!-- <svelte:head>
@@ -64,6 +72,7 @@
 {#if !loaded}
   <h1>Caricamento in corso...</h1>
 {:else}
+  <button onclick={migrate}>Migrate</button>
   <AppBar
     gridColumns="grid-cols-3"
     slotDefault="place-self-center"

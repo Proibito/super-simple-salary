@@ -27,7 +27,7 @@
     {totalWageMonth} 🤑
   </p>
   <hr />
-
+  
   <WorkShifts></WorkShifts>
   <!-- <SummaryDays /> -->
 </div>
