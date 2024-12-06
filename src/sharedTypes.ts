@@ -1,3 +1,5 @@
+import type { DocumentReference } from 'firebase/firestore'
+import { WorkShift } from './types'
 export enum UserRole {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
@@ -24,18 +26,15 @@ export interface User {
   avatar?: string
   phoneNumber?: string
   location?: string
+  workShifts?: DocumentReference[]
 }
 
 export interface SignUpData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
+  email: string
+  password: string
+  firstName: string
+  lastName: string
 }
-
-
-
-
 
 export type CreateUserDTO = Omit<
   User,

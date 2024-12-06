@@ -7,11 +7,12 @@
   import { currentUser, daysOBS } from '$lib/store.svelte'
   import { setDefaultOptions } from 'date-fns'
   import { it } from 'date-fns/locale'
-  import Aggiungi from './aggiungi.svelte'
   import Menu from '$lib/components/Menu.svelte'
   import type { User } from '../sharedTypes'
   import { goto } from '$app/navigation'
   import { getAuth, signOut } from 'firebase/auth'
+  import Portal from '$lib/components/Portal.svelte'
+  import AddWorkedDay from '$lib/components/AddWorkedDay.svelte'
 
   interface Props {
     children?: import('svelte').Snippet
@@ -63,10 +64,6 @@
 {#if !loaded}
   <h1>Caricamento in corso...</h1>
 {:else}
-  {#if visibleAdd}
-    <Aggiungi />
-  {/if}
-
   <AppBar
     gridColumns="grid-cols-3"
     slotDefault="place-self-center"
@@ -90,6 +87,14 @@
   <main class="m-auto px-2 lg:w-1/2">
     {@render children?.()}
   </main>
+{/if}
+
+{#if visibleAdd}
+  <Portal target="body">
+    <div class="bg-slate-300 dark:bg-slate-950">
+      <AddWorkedDay></AddWorkedDay>
+    </div>
+  </Portal>
 {/if}
 
 <Menu bind:openMenu />

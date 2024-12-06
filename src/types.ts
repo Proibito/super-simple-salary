@@ -46,41 +46,43 @@ export enum WorkedHoursStatus {
   PAID = 'PAID'
 }
 
-export interface WorkLocation {
-  date: Timestamp
-  location: string
-  locationId?: string
-  eventType?: string
+export enum WorkLocations {
+  VILLA_SASSI = 'Villa Sassi',
+  VILLA_BRIA = 'Villa Bria',
+  BAROLO = 'Barolo',
+  CLOUD = 'Cloud',
+  MUMA = 'Muma'
 }
 
-export interface WorkedHours {
-  id: string
-  userId: string
 
-  // Informazioni sulla location/evento
-  workLocation: WorkLocation
+export interface WorkLocation {  // Rinominato da Location a WorkLocation
+  id: string;
+  name: string;
+  active: boolean;
+}
 
-  // Orari di lavoro
-  timeSlots: {
-    startTime: Timestamp
-    endTime: Timestamp
-    notes?: string
-  }[]
+export interface TimeRange {
+  start: Timestamp;
+  end: Timestamp;
+  notes?: string;
+}
 
-  status: WorkedHoursStatus
-  totalHours: number
-
-  // Riferimento all'evento se esiste
-  eventId?: string
-
-  // Campi di validazione
-  validatedBy?: string
-  validatedAt?: Timestamp
-  validatedHours?: number
-  adjustmentNotes?: string
-
-  createdAt: Timestamp
-  updatedAt: Timestamp
+export interface WorkShift {
+  id: string;
+  userId: string;
+  eventId?: string;
+  date: Timestamp;
+  locationId: string;
+  status: 'DRAFT' | 'VALIDATED' | 'COMPLETED' | 'REJECTED';
+  timeRanges: TimeRange[];
+  totalHours: number;
+  travel: boolean;
+  usePersonalCar: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  validatedBy?: string;
+  validatedAt?: Timestamp;
+  validatedHours?: number;
 }
 
 export interface DetailedWage {

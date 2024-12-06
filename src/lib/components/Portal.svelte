@@ -17,7 +17,7 @@
 
 <div
   bind:this={portalContent}
-  class="fixed top-0 flex h-screen w-full flex-wrap justify-center bg-slate-300 bg-opacity-60 p-5 align-middle"
+  class="fixed top-0 flex h-screen w-full flex-wrap justify-center p-5 align-middle"
 >
   {@render children()}
 </div>

@@ -3,13 +3,30 @@ import { redirect } from '@sveltejs/kit'
 import { getAuth } from 'firebase/auth'
 import { get } from 'svelte/store'
 import { currentUser, firebaseInitialized } from './store.svelte'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, onSnapshot } from 'firebase/firestore'
 import type { User } from '../sharedTypes'
 
 export const user = $state(null)
 
 async function loadUser(uid: string) {
   try {
+    onSnapshot(
+      doc(db, 'users', uid),
+      {
+        includeMetadataChanges: true,
+        source: 'cache'
+      },
+      (documentSnapshot) => {
+        const userData = documentSnapshot.data()
+        if (userData)
+          currentUser.set({
+            ...userData,
+            createdAt: userData.createdAt.toDate(),
+            updatedAt: userData.updatedAt.toDate(),
+            lastLoginAt: userData.lastLoginAt?.toDate()
+          } as User)
+      }
+    )
     const userDoc = await getDoc(doc(db, 'users', uid))
 
     if (userDoc.exists()) {

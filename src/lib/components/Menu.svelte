@@ -3,8 +3,6 @@
 
   let { openMenu = $bindable() } = $props()
 
-  openMenu = true
-
   type menuItem = { label: string; link: string }
   const links: menuItem[] = [
     { label: 'home', link: 'home' },

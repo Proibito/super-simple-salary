@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { handlers } from 'svelte/legacy';
-
   import { format, getMonth } from 'date-fns'
   import {
     calculateTotalHours,
@@ -65,7 +63,7 @@
             {#if idx !== editDate}
               <span
                 class="block text-sm font-medium text-gray-700 dark:text-white"
-                onclick={handlers(() => modificaData(idx), () => modificaData(idx))}
+                onclick={() => modificaData(idx)}
                 role="button"
                 tabindex="0"
                 aria-pressed="true"
