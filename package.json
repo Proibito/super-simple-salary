@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "emulators": "firebase emulators:start --import ./emulator-data --export-on-exit ./emulator-data ",
+    "emulators": "firebase emulators:start --import ./emulator-data --export-on-exit ./emulator-data",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
@@ -45,6 +45,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@iconify/svelte": "^4.1.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.0.2",
     "idb": "^8.0.0",

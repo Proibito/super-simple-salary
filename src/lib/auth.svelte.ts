@@ -3,62 +3,64 @@ import { redirect } from '@sveltejs/kit'
 import { getAuth } from 'firebase/auth'
 import { get } from 'svelte/store'
 import { currentUser, firebaseInitialized } from './store.svelte'
-import { doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { doc, onSnapshot } from 'firebase/firestore'
 import type { User } from '../sharedTypes'
 
-export const user = $state(null)
+const AUTH_TIMEOUT_MS = 10000 // Aumentato a 10 secondi per maggiore affidabilità
 
-async function loadUser(uid: string) {
-  try {
-    onSnapshot(
-      doc(db, 'users', uid),
-      {
-        includeMetadataChanges: true,
-        source: 'cache'
-      },
-      (documentSnapshot) => {
-        const userData = documentSnapshot.data()
-        if (userData)
-          currentUser.set({
-            ...userData,
-            createdAt: userData.createdAt.toDate(),
-            updatedAt: userData.updatedAt.toDate(),
-            lastLoginAt: userData.lastLoginAt?.toDate()
-          } as User)
-      }
-    )
-    const userDoc = await getDoc(doc(db, 'users', uid))
-
-    if (userDoc.exists()) {
-      const userData = userDoc.data()
-
-      currentUser.set({
-        ...userData,
-        createdAt: userData.createdAt.toDate(),
-        updatedAt: userData.updatedAt.toDate(),
-        lastLoginAt: userData.lastLoginAt?.toDate()
-      } as User)
-    } else {
-      console.error('cannot load user')
-      currentUser.set(null)
-    }
-  } catch (error) {
-    console.error('Errore nel caricamento dati utente:', error)
-    currentUser.set(null)
-  }
+// Utility function per convertire i timestamp Firestore
+function convertFirestoreTimestamps(userData: any): User {
+  return {
+    ...userData,
+    createdAt: userData.createdAt?.toDate(),
+    updatedAt: userData.updatedAt?.toDate(),
+    lastLoginAt: userData.lastLoginAt?.toDate()
+  } as User
 }
 
+// Gestione unificata del caricamento utente
+function setupUserListener(uid: string) {
+  return onSnapshot(
+    doc(db, 'users', uid),
+    {
+      includeMetadataChanges: true
+    },
+    (documentSnapshot) => {
+      if (!documentSnapshot.exists()) {
+        console.error('User document not found')
+        currentUser.set(null)
+        return
+      }
+
+      const userData = documentSnapshot.data()
+      if (userData) {
+        currentUser.set(convertFirestoreTimestamps(userData))
+      }
+    },
+    (error) => {
+      console.error('Error loading user data:', error)
+      currentUser.set(null)
+    }
+  )
+}
+
+// Listener per i cambiamenti di auth state
 auth?.onAuthStateChanged((userData) => {
-  if (userData) loadUser(userData.uid)
+  if (userData) {
+    setupUserListener(userData.uid)
+  } else {
+    currentUser.set(null)
+  }
 })
 
 export async function authGuard() {
+  // Attendi l'inizializzazione di Firebase
   if (!get(firebaseInitialized)) {
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       const unsubscribe = firebaseInitialized.subscribe((initialized) => {
         if (initialized) {
           unsubscribe()
-          resolve(true)
+          resolve()
         }
       })
     })
@@ -66,24 +68,30 @@ export async function authGuard() {
 
   const auth = getAuth()
 
-  await Promise.race([
-    new Promise((resolve) => {
-      const unsubscribe = auth.onAuthStateChanged((user) => {
-        if (user) loadUser(user?.uid)
-        unsubscribe()
-        resolve(user)
-      })
-    }),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Auth timeout')), 5000)
-    )
-  ])
+  try {
+    const user = await Promise.race([
+      new Promise((resolve) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+          unsubscribe()
+          if (user) setupUserListener(user.uid)
+          resolve(user)
+        })
+      }),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Authentication timeout - please try again')),
+          AUTH_TIMEOUT_MS
+        )
+      )
+    ])
 
-  if (!auth.currentUser) {
+    if (!user) {
+      throw redirect(303, '/login')
+    }
+
+    return { user }
+  } catch (error) {
+    console.error('Auth error:', error)
     throw redirect(303, '/login')
-  }
-
-  return {
-    user: auth.currentUser
   }
 }

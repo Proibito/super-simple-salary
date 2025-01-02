@@ -100,8 +100,6 @@
 </script>
 
 <div class="p-4">
-  <p class="mb-4">Clicca sugli orari o sulla data per modificare!</p>
-
   {#each workShifts as shift, idx}
     {#if idx === 0 || getMonth(workShifts[idx - 1].date.toDate()) !== getMonth(shift.date.toDate())}
       <div class="mb-2 mt-6 p-2">

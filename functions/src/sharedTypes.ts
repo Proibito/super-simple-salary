@@ -1,5 +1,5 @@
 import type { DocumentReference } from 'firebase/firestore'
-import { WorkShift } from './types'
+
 export enum UserRole {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',

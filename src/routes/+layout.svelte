@@ -15,6 +15,7 @@
   import AddWorkedDay from '$lib/components/AddWorkedDay.svelte'
   import { migrateDB } from '$lib/database'
   import { get } from 'svelte/store'
+  import Navigation from '$lib/GUI/Navigation.svelte'
 
   interface Props {
     children?: import('svelte').Snippet
@@ -23,7 +24,7 @@
   let { children }: Props = $props()
 
   let visibleAdd = $state(false)
-  // let webManifest = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '')
+
   let loaded: boolean = $state(false)
   let user: User | null = $state(null)
   currentUser.subscribe((us) => (user = us))
@@ -48,14 +49,7 @@
     }
   })
 
-  async function logOut() {
-    const auth = getAuth()
-    await signOut(auth)
-    currentUser.set(null)
-    goto('/login')
-  }
 
-  let openMenu = $state(false)
 
   async function migrate() {
     const user = get(currentUser)
@@ -72,30 +66,31 @@
 {#if !loaded}
   <h1>Caricamento in corso...</h1>
 {:else}
-  <button onclick={migrate}>Migrate</button>
-  <AppBar
-    gridColumns="grid-cols-3"
-    slotDefault="place-self-center"
-    slotTrail="place-content-end"
-    class="dark:bg-slate-950 dark:text-white"
-  >
-    {#snippet lead()}
-      <button onclick={() => (openMenu = !openMenu)}>
-        <IconAccessibility />
-      </button>
-    {/snippet}
-    Benvenuto {user?.firstName}
-    {#snippet trail()}
-      <button class="btn-suc btn" onclick={() => (visibleAdd = true)}>
-        Aggiungi
-      </button>
+  <Navigation>
+    <!-- <button onclick={migrate}>Migrate</button> -->
+    <!-- <AppBar
+      gridColumns="grid-cols-3"
+      slotDefault="place-self-center"
+      slotTrail="place-content-end"
+      class="dark:bg-slate-950 dark:text-white"
+    >
+      {#snippet lead()}
+        <button onclick={() => (openMenu = !openMenu)}>
+          <IconAccessibility />
+        </button>
+      {/snippet}
+      Benvenuto {user?.firstName}
+      {#snippet trail()}
+        <button class="btn-suc btn" onclick={() => (visibleAdd = true)}>
+          Aggiungi
+        </button>
 
-      <button onclick={logOut}>Logout</button>
-    {/snippet}
-  </AppBar>
-  <main class="m-auto px-2 lg:w-1/2">
+        <button onclick={logOut}>Logout</button>
+      {/snippet}
+    </AppBar> -->
+
     {@render children?.()}
-  </main>
+  </Navigation>
 {/if}
 
 {#if visibleAdd}
@@ -105,5 +100,3 @@
     </div>
   </Portal>
 {/if}
-
-<Menu bind:openMenu />
