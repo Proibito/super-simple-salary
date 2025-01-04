@@ -33,9 +33,7 @@
   }
 </script>
 
-<div
-  class="flex items-center justify-center bg-gray-50 px-4 pt-10 dark:bg-gray-900"
->
+<div class="flex items-center justify-center px-4 pt-10 dark:bg-gray-900">
   <div class="w-full max-w-md space-y-8">
     <div>
       <h2

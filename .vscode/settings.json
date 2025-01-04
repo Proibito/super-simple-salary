@@ -1,3 +1,9 @@
 {
-  "cSpell.words": ["IDBP"]
+  "cSpell.words": ["IDBP"],
+  "workbench.colorCustomizations": {
+    "tree.indentGuidesStroke": "#05a805",
+    "tree.inactiveIndentGuidesStroke": "#5d5700"
+  },
+  "workbench.tree.renderIndentGuides": "always",
+  "workbench.tree.indent": 12
 }

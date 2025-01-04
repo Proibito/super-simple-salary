@@ -4,7 +4,7 @@
 
 @layer base {
   .btn {
-    @apply rounded-sm border p-2 px-3 dark:border-slate-700 dark:bg-slate-800;
+    @apply inline-block rounded-sm border p-2 px-3 dark:border-slate-700 dark:bg-slate-800;
   }
 
   .btn-suc {

@@ -5,12 +5,15 @@
   import { get } from 'svelte/store'
   import { getAuth, signOut } from 'firebase/auth'
   import { goto } from '$app/navigation'
+  import { onMount } from 'svelte'
 
   let isSidebarOpen = $state(true)
 
   let user = $state<User | null>(null)
 
   let isMenuVisible = $state(false)
+
+  let menuRef: HTMLDivElement
 
   $effect(() => {
     user = $currentUser
@@ -20,16 +23,30 @@
     isSidebarOpen = !isSidebarOpen
   }
 
+  onMount(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMenuVisible && menuRef && !menuRef.contains(event.target as Node)) {
+        isMenuVisible = false
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  })
+
   let { children } = $props()
 
   const Menu = [
     { icon: 'material-symbols:home-outline', link: '/', label: 'Home' },
     {
-      icon: 'material-symbols:person-add',
-      link: '/addWorker',
-      label: 'Aggiungi dipendente'
+      icon: 'material-symbols:group',
+      link: '/workers',
+      label: 'Dipendenti'
     },
-    { icon: 'mdi:events', link: '/events', label: 'Eventi' },
+    { icon: 'mdi:events', link: '/events', label: 'Eventi' }
   ]
 
   const TopMenu = [
@@ -76,14 +93,14 @@
           </button>
         {/each}
         <!-- Profile -->
-        <div>
+        <div bind:this={menuRef}>
           <button
             class="block h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600"
             onclick={() => (isMenuVisible = !isMenuVisible)}
             aria-label="menu-profile"
           ></button>
           <div
-            class={`absolute right-4 top-14 flex w-56 flex-col border dark:border-gray-700 dark:bg-gray-900 ${isMenuVisible ? 'visible' : 'hidden'}`}
+            class={`absolute right-4 top-14 flex w-56 flex-col border dark:border-gray-700 dark:bg-gray-900 ${isMenuVisible ? 'visible' : 'hidden'} rounded bg-white shadow-md`}
           >
             <div class="flex flex-col border-b p-3 py-5">
               <span class="font-bold">{user?.firstName} {user?.lastName}</span>
@@ -103,7 +120,7 @@
   </header>
 
   <!-- Sidebar and Main Content -->
-  <div class="flex h-screen pt-16">
+  <div class="flex pt-16">
     <!-- Sidebar -->
     <aside
       class={`fixed left-0 top-16 h-full border-r border-gray-200 bg-white transition-all duration-300 dark:border-gray-700 dark:bg-gray-800 ${isSidebarOpen ? 'w-64' : 'w-0 -translate-x-full'} overflow-auto`}
